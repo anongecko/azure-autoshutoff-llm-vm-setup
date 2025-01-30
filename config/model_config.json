@@ -1,0 +1,129 @@
+{
+    "model_name": "DeepSeek-R1-Distill-Qwen-32B",
+    "model_path": "/data/models/merged",
+    "torch_dtype": "bfloat16",
+    "max_sequence_length": 131072,
+    "hardware": {
+        "device_map": "auto",
+        "max_memory": {
+            "0": "79GB",
+            "cpu": "300GB"
+        },
+        "offload_config": {
+            "offload_folder": "/tmp/offload",
+            "cpu_offload_threshold": 0.9,
+            "gpu_memory_buffer": "1GB"
+        }
+    },
+    "inference": {
+        "max_batch_size": 1,
+        "prefill_chunk_size": 16384,
+        "decode_chunk_size": 2048,
+        "streaming_chunk_size": 32,
+        "max_concurrent_requests": 1,
+        "cpu_offload": {
+            "enabled": true,
+            "pin_memory": true,
+            "pre_load_layers": 32,
+            "layer_distribution": {
+                "gpu": "all",
+                "cpu_mirror": true
+            }
+        }
+    },
+    "attention": {
+        "use_flash_attention": true,
+        "attention_implementation": "flash_attention_2",
+        "sliding_window": null,
+        "kv_cache_strategy": "dynamic",
+        "max_new_tokens": 16384
+    },
+    "optimization": {
+        "torch_compile": true,
+        "compile_mode": "max-autotune",
+        "compile_dynamic": true,
+        "compile_backend": "inductor",
+        "use_cache": true,
+        "kv_cache_fp16": false,
+        "memory_efficient_attention": true,
+        "use_logn_attn": true,
+        "use_dynamic_ntk": true,
+        "workspace_size": "75GB",
+        "cpu_memory_pool": {
+            "enabled": true,
+            "size": "250GB",
+            "pin_memory": true
+        }
+    },
+    "generation": {
+        "temperature": 0.7,
+        "top_p": 0.95,
+        "repetition_penalty": 1.1,
+        "do_sample": true,
+        "num_return_sequences": 1,
+        "min_length": 32,
+        "max_length": 131072,
+        "max_time": 600,
+        "early_stopping": false,
+        "typical_p": 0.95,
+        "top_k": 0,
+        "presence_penalty": 0.0,
+        "frequency_penalty": 0.0
+    },
+    "context_window": {
+        "chunk_overlap": 512,
+        "chunk_size": 16384,
+        "max_chunks": 8,
+        "attention_sink": true,
+        "compression_factor": 4,
+        "context_compression": {
+            "enabled": true,
+            "method": "attention_pooling",
+            "pool_size": 4
+        }
+    },
+    "code_specific": {
+        "syntax_highlighting": true,
+        "enable_line_numbers": true,
+        "enable_code_completion": true,
+        "code_context_window": 131072,
+        "preserve_indentation": true,
+        "language_specific_prompting": true,
+        "code_quality": {
+            "enforce_style_guide": true,
+            "maintain_consistency": true,
+            "optimize_imports": true
+        },
+        "documentation": {
+            "generate_docstrings": true,
+            "include_examples": true,
+            "type_annotations": true
+        },
+        "analysis": {
+            "detect_edge_cases": true,
+            "suggest_optimizations": true,
+            "identify_dependencies": true
+        },
+        "context_processing": {
+            "preserve_file_structure": true,
+            "handle_multiple_files": true,
+            "detect_file_types": true,
+            "maintain_file_references": true
+        },
+        "response_format": {
+            "streaming_chunks": true,
+            "highlight_code_blocks": true,
+            "include_line_numbers": true
+        }
+    },
+    "api_compatibility": {
+        "openai_compatible": true,
+        "endpoint_format": "v1",
+        "streaming_format": "openai",
+        "context_handling": {
+            "max_files": 75,
+            "max_file_size_mb": 50,
+            "parse_file_content": true
+        }
+    }
+}

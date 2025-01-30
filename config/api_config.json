@@ -1,0 +1,27 @@
+{
+    "host": "0.0.0.0",
+    "port": 8000,
+    "workers": 1,
+    "timeout": 300,
+    "api_key_format": "sk-*",
+    "rate_limit": {
+        "requests_per_minute": 100,
+        "burst_limit": 120
+    },
+    "memory_threshold_gb": 75,
+    "endpoints": {
+        "chat": "/v1/chat/completions",
+        "completions": "/v1/completions",
+        "models": "/v1/models",
+        "health": "/health"
+    },
+    "cors": {
+        "allow_origins": ["*"],
+        "allow_methods": ["*"],
+        "allow_headers": ["*"]
+    },
+    "security": {
+        "ssl_enabled": false,
+        "token_expiry_hours": 24
+    }
+}
