@@ -27,3 +27,6 @@ Dockerfile
 README.md
 tests/
 *.md
+transformers/
+flashinfer/
+.cuda_cache/

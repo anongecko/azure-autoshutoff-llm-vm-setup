@@ -59,53 +59,6 @@ echo "Setting up project directory at ${PROJECT_ROOT}"
 sudo mkdir -p ${PROJECT_ROOT}/{models,logs,config}
 sudo chown -R $USER:$USER ${PROJECT_ROOT}
 
-# Create systemd service for the API
-echo "Creating systemd service..."
-cat << EOF | sudo tee /etc/systemd/system/deepseek-api.service
-[Unit]
-Description=DeepSeek API Service
-After=network.target
-
-[Service]
-User=$USER
-WorkingDirectory=${PROJECT_ROOT}
-Environment=PYTHONPATH=${PROJECT_ROOT}
-Environment=CUDA_VISIBLE_DEVICES=0
-ExecStart=/usr/local/bin/uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --workers 1
-Restart=always
-StandardOutput=append:${PROJECT_ROOT}/logs/api.log
-StandardError=append:${PROJECT_ROOT}/logs/api.error.log
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-# Create systemd service for the monitor
-echo "Creating monitor service..."
-cat << EOF | sudo tee /etc/systemd/system/deepseek-monitor.service
-[Unit]
-Description=DeepSeek Monitor Service
-After=deepseek-api.service
-
-[Service]
-User=$USER
-WorkingDirectory=${PROJECT_ROOT}
-Environment=PYTHONPATH=${PROJECT_ROOT}
-ExecStart=/usr/bin/python3 scripts/azure/monitor.py
-Restart=always
-StandardOutput=append:${PROJECT_ROOT}/logs/monitor.log
-StandardError=append:${PROJECT_ROOT}/logs/monitor.error.log
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-# Enable and start services
-echo "Enabling and starting services..."
-sudo systemctl daemon-reload
-sudo systemctl enable deepseek-api deepseek-monitor
-sudo systemctl start deepseek-api deepseek-monitor
-
 # Setup monitoring
 echo "Setting up monitoring..."
 mkdir -p ${PROJECT_ROOT}/monitoring
