@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: deepseek-api:latest
+    container_name: deepseek-api
+    restart: unless-stopped
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=0
+      - OMP_NUM_THREADS=40
+      - MKL_NUM_THREADS=40
+      - CUDA_VISIBLE_DEVICES=0
+    volumes:
+      - ./data/models:/data/models
+      - ./data/qwen/logs:/data/qwen/logs
+      - ./config:/app/config
+      - model_checkpoints:/tmp/model_checkpoints
+      - model_offload:/tmp/offload
+    ports:
+      - "8000:8000"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+        limits:
+          cpus: '40'
+          memory: 320G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  model_checkpoints:
+  model_offload:

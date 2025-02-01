@@ -1,58 +1,46 @@
-# Dockerfile
-FROM nvidia/cuda:12.3.0-devel-ubuntu22.04
+# Use NVIDIA's CUDA 12.1 base image with Ubuntu 22.04
+FROM nvidia/cuda:12.1.1-cudnn8-devel-ubuntu22.04
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
-    CUDA_HOME=/usr/local/cuda \
-    PATH=/usr/local/cuda/bin:$PATH \
-    LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH \
-    TORCH_CUDA_ARCH_LIST="8.9" \
-    CUDA_VISIBLE_DEVICES=0 \
-    PROJECT_ROOT=/opt/deepseek
+    NVIDIA_VISIBLE_DEVICES=all \
+    NVIDIA_DRIVER_CAPABILITIES=all \
+    TORCH_CUDA_ARCH_LIST="8.0;8.6;9.0" \
+    MAX_JOBS=8
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
-    wget \
     curl \
-    software-properties-common \
     python3.10 \
     python3.10-dev \
     python3-pip \
+    python3-setuptools \
     build-essential \
     ninja-build \
+    pkg-config \
+    libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Create project structure
-RUN mkdir -p ${PROJECT_ROOT}/{src,models,config,scripts,logs,tests}
+# Create app directory
+WORKDIR /app
 
-# Set working directory
-WORKDIR ${PROJECT_ROOT}
-
-# Copy requirements first for better caching
+# Install Python dependencies first to leverage Docker cache
 COPY requirements.txt .
-RUN python3 -m pip install --no-cache-dir -r requirements.txt
-
-# Install Flash Attention 2
-RUN git clone https://github.com/Dao-AILab/flash-attention.git && \
-    cd flash-attention && \
-    python3 setup.py install && \
-    cd .. && \
-    rm -rf flash-attention
+RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Copy project files
-COPY . .
+COPY src/ ./src/
+COPY config/ ./config/
+COPY scripts/ ./scripts/
 
-# Create directory for model weights
-RUN mkdir -p ${PROJECT_ROOT}/models/merged
+# Create necessary directories
+RUN mkdir -p /data/qwen/logs /data/models/merged /tmp/model_checkpoints /tmp/offload
 
-# Set up health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+# Set up entry point script
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-# Expose API port
-EXPOSE 8000
-
-# Start services
-CMD ["bash", "scripts/startup.sh"]
+# Default command
+CMD ["/entrypoint.sh"]
