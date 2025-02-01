@@ -1,9 +1,0 @@
---_curl_--
-quote>     "prompt": "Write a simple Python hello world program"
---_curl_--
-quote>     "temperature": 0.7
---_curl_--
-quote>     "max_tokens": 4096
---_curl_--
-quote>     "stream": true
-quote>   

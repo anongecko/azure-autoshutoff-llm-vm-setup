@@ -3,40 +3,70 @@
     "model_path": "/data/models/merged",
     "torch_dtype": "bfloat16",
     "max_sequence_length": 131072,
+    "startup": {
+        "checkpoint_dir": "/tmp/model_checkpoints",
+        "checkpoint_ttl_hours": 24,
+        "parallel_init": true,
+        "warmup_batches": 3,
+        "progressive_loading": true,
+        "verify_weights": true
+    },
     "hardware": {
-        "device_map": "auto",
+        "device_map": {
+            "": 0
+        },
         "max_memory": {
-            "0": "79GB",
-            "cpu": "300GB"
+            "0": "76GB",
+            "cpu": "256GB"
         },
         "offload_config": {
             "offload_folder": "/tmp/offload",
-            "cpu_offload_threshold": 0.9,
-            "gpu_memory_buffer": "1GB"
+            "cpu_offload_threshold": 0.85,
+            "gpu_memory_buffer": "2GB",
+            "pin_tensors": true,
+            "offload_projection_layers": true
+        },
+        "cuda_config": {
+            "allow_tf32": true,
+            "cudnn_benchmark": true,
+            "cudnn_deterministic": false,
+            "memory_stats": true,
+            "num_threads": 40
         }
     },
     "inference": {
         "max_batch_size": 1,
-        "prefill_chunk_size": 16384,
-        "decode_chunk_size": 2048,
+        "prefill_chunk_size": 8192,
+        "decode_chunk_size": 1024,
         "streaming_chunk_size": 32,
         "max_concurrent_requests": 1,
         "cpu_offload": {
             "enabled": true,
             "pin_memory": true,
-            "pre_load_layers": 32,
+            "pre_load_layers": 16,
             "layer_distribution": {
                 "gpu": "all",
-                "cpu_mirror": true
+                "cpu_mirror": false
             }
+        },
+        "dynamic_batching": {
+            "enabled": true,
+            "max_batch_tokens": 16384,
+            "batch_timeout_ms": 50
         }
     },
     "attention": {
         "use_flash_attention": true,
         "attention_implementation": "flash_attention_2",
-        "sliding_window": null,
+        "sliding_window": 8192,
         "kv_cache_strategy": "dynamic",
-        "max_new_tokens": 16384
+        "max_new_tokens": 16384,
+        "attention_sink_size": 1024,
+        "local_attention_size": 512,
+        "rope_scaling": {
+            "type": "dynamic",
+            "factor": 2.0
+        }
     },
     "optimization": {
         "torch_compile": true,
@@ -48,11 +78,24 @@
         "memory_efficient_attention": true,
         "use_logn_attn": true,
         "use_dynamic_ntk": true,
-        "workspace_size": "75GB",
+        "workspace_size": "72GB",
         "cpu_memory_pool": {
             "enabled": true,
-            "size": "250GB",
-            "pin_memory": true
+            "size": "200GB",
+            "pin_memory": true,
+            "defragment": true
+        },
+        "gpu_memory_pool": {
+            "enabled": true,
+            "max_split_size_mb": 512,
+            "roundup_power2_divisions": 32,
+            "garbage_collection_threshold": 0.8,
+            "memory_fraction": 0.95
+        },
+        "quantization": {
+            "kv_cache_quant": "nf4",
+            "attention_quant": "int8",
+            "intermediate_quant": null
         }
     },
     "generation": {
@@ -64,22 +107,29 @@
         "min_length": 32,
         "max_length": 131072,
         "max_time": 600,
-        "early_stopping": false,
+        "early_stopping": true,
         "typical_p": 0.95,
-        "top_k": 0,
+        "top_k": 50,
         "presence_penalty": 0.0,
-        "frequency_penalty": 0.0
+        "frequency_penalty": 0.0,
+        "length_penalty": 1.0
     },
     "context_window": {
-        "chunk_overlap": 512,
-        "chunk_size": 16384,
-        "max_chunks": 8,
+        "chunk_overlap": 1024,
+        "chunk_size": 8192,
+        "max_chunks": 16,
         "attention_sink": true,
         "compression_factor": 4,
         "context_compression": {
             "enabled": true,
             "method": "attention_pooling",
-            "pool_size": 4
+            "pool_size": 4,
+            "adaptive_pooling": true
+        },
+        "memory_management": {
+            "aggressive_cleanup": true,
+            "defrag_interval": 1000,
+            "max_memory_usage": 0.9
         }
     },
     "code_specific": {
@@ -89,41 +139,196 @@
         "code_context_window": 131072,
         "preserve_indentation": true,
         "language_specific_prompting": true,
+        "indentation_management": {
+            "python": {
+                "style": "spaces",
+                "size": 4,
+                "enforce_consistency": true,
+                "detect_blocks": true,
+                "structural_tokens": [
+                    "def", "class", "if", "elif", "else", "try", "except", 
+                    "finally", "for", "while", "with", "async"
+                ],
+                "indent_triggers": [":"],
+                "dedent_triggers": ["return", "raise", "break", "continue", "pass"],
+                "scope_analysis": true,
+                "maintain_blank_lines": true,
+                "align_continuation": true,
+                "handle_nested_functions": true,
+                "handle_decorators": true
+            },
+            "nextjs": {
+                "style": "spaces",
+                "size": 2,
+                "enforce_consistency": true,
+                "detect_blocks": true,
+                "structural_tokens": [
+                    "function", "const", "let", "if", "else", "try", "catch",
+                    "finally", "for", "while", "do", "switch", "case"
+                ],
+                "jsx_elements": {
+                    "preserve_formatting": true,
+                    "align_attributes": true,
+                    "handle_fragments": true,
+                    "component_spacing": true
+                },
+                "handle_template_literals": true,
+                "handle_jsx_expressions": true,
+                "handle_imports": true
+            }
+        },
+        "completion_enhancement": {
+            "python": {
+                "context_analysis": {
+                    "detect_imports": true,
+                    "track_variables": true,
+                    "analyze_types": true,
+                    "track_function_signatures": true,
+                    "detect_class_structure": true
+                },
+                "code_patterns": {
+                    "common_patterns": [
+                        "function_definition",
+                        "class_definition",
+                        "list_comprehension",
+                        "error_handling",
+                        "context_managers",
+                        "decorators"
+                    ],
+                    "bias_weights": {
+                        "function_definition": 1.2,
+                        "class_definition": 1.15,
+                        "error_handling": 1.1,
+                        "imports": 1.05
+                    }
+                },
+                "autocompletion": {
+                    "suggest_type_hints": true,
+                    "suggest_docstrings": true,
+                    "suggest_error_handling": true,
+                    "complete_function_params": true,
+                    "complete_return_types": true
+                },
+                "frameworks": {
+                    "detect_frameworks": true,
+                    "framework_specific_completions": true,
+                    "common_patterns": {
+                        "fastapi": true,
+                        "pytorch": true,
+                        "asyncio": true
+                    }
+                }
+            },
+            "nextjs": {
+                "context_analysis": {
+                    "detect_imports": true,
+                    "track_components": true,
+                    "analyze_props": true,
+                    "track_hooks": true,
+                    "detect_page_structure": true
+                },
+                "code_patterns": {
+                    "common_patterns": [
+                        "component_definition",
+                        "hook_usage",
+                        "effect_handling",
+                        "api_routes",
+                        "data_fetching",
+                        "routing"
+                    ],
+                    "bias_weights": {
+                        "component_definition": 1.2,
+                        "hook_usage": 1.15,
+                        "typescript_types": 1.1,
+                        "imports": 1.05
+                    }
+                },
+                "autocompletion": {
+                    "suggest_props": true,
+                    "suggest_hooks": true,
+                    "suggest_types": true,
+                    "complete_jsx": true,
+                    "complete_event_handlers": true
+                },
+                "frameworks": {
+                    "tailwind": {
+                        "class_completion": true,
+                        "suggest_responsive": true,
+                        "suggest_variants": true
+                    },
+                    "react": {
+                        "hooks_completion": true,
+                        "lifecycle_methods": true,
+                        "prop_types": true
+                    }
+                }
+            }
+        },
         "code_quality": {
             "enforce_style_guide": true,
             "maintain_consistency": true,
-            "optimize_imports": true
+            "optimize_imports": true,
+            "format_on_completion": true,
+            "python_specific": {
+                "enforce_pep8": true,
+                "sort_imports": true,
+                "handle_type_hints": true
+            },
+            "nextjs_specific": {
+                "enforce_eslint": true,
+                "organize_imports": true,
+                "prefer_const": true
+            }
         },
         "documentation": {
             "generate_docstrings": true,
             "include_examples": true,
-            "type_annotations": true
+            "type_annotations": true,
+            "docstring_format": "google",
+            "examples_complexity": "high",
+            "code_comments": "detailed"
         },
         "analysis": {
             "detect_edge_cases": true,
             "suggest_optimizations": true,
-            "identify_dependencies": true
+            "identify_dependencies": true,
+            "detect_patterns": true,
+            "complexity_analysis": true
         },
         "context_processing": {
             "preserve_file_structure": true,
             "handle_multiple_files": true,
             "detect_file_types": true,
-            "maintain_file_references": true
+            "maintain_file_references": true,
+            "extract_imports": true,
+            "track_dependencies": true
         },
         "response_format": {
             "streaming_chunks": true,
             "highlight_code_blocks": true,
-            "include_line_numbers": true
-        }
-    },
-    "api_compatibility": {
-        "openai_compatible": true,
-        "endpoint_format": "v1",
-        "streaming_format": "openai",
-        "context_handling": {
-            "max_files": 75,
-            "max_file_size_mb": 50,
-            "parse_file_content": true
+            "include_line_numbers": true,
+            "format_code": true,
+            "syntax_aware_chunking": true
+        },
+        "token_biasing": {
+            "python": {
+                "keywords": 1.2,
+                "builtins": 1.15,
+                "indent_tokens": 1.1,
+                "structural_tokens": 1.15,
+                "framework_specific": {
+                    "fastapi": 1.1,
+                    "pytorch": 1.1,
+                    "asyncio": 1.1
+                }
+            },
+            "nextjs": {
+                "jsx_elements": 1.2,
+                "hooks": 1.15,
+                "react_keywords": 1.1,
+                "typescript_tokens": 1.1,
+                "tailwind_classes": 1.05
+            }
         }
     }
 }

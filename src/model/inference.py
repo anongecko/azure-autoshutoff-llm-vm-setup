@@ -1,421 +1,610 @@
-from typing import Dict, List, Optional, Union, Generator, AsyncGenerator, Any
+from typing import Dict, List, Optional, Union, AsyncGenerator, Any, Tuple
 import torch
 import torch.nn.functional as F
 from transformers import PreTrainedModel, PreTrainedTokenizer
-from transformers.tokenization_utils_base import BatchEncoding
-import numpy as np
-from contextlib import contextmanager
-import gc
-import threading
-from queue import Queue
 import asyncio
-from concurrent.futures import ThreadPoolExecutor
 import logging
-from dataclasses import dataclass
-from threading import Lock
+from ..utils import OptimizedMemoryManager
+from dataclasses import dataclass, field
+import gc
+from contextlib import asynccontextmanager
+import json
+from pathlib import Path
+import time
+import statistics
+from enum import Enum
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+class StoppingCriteria(Enum):
+    """Enumeration of stopping criteria for generation"""
+
+    MAX_TOKENS = "max_tokens"
+    SEQUENCE_LENGTH = "sequence_length"
+    STOP_SEQUENCE = "stop_sequence"
+    ERROR = "error"
+    MEMORY_PRESSURE = "memory_pressure"
+
+
 @dataclass
-class InferenceConfig:
-    max_batch_size: int = 32
+class KVCache:
+    """Enhanced KV Cache management for efficient inference"""
+
+    key_states: Optional[torch.Tensor] = None
+    value_states: Optional[torch.Tensor] = None
+    current_length: int = 0
+    max_length: int = field(default_factory=lambda: 0)
+    position_offset: int = 0
+
+    def update(self, key: torch.Tensor, value: torch.Tensor, position: int):
+        """Update cache with new key-value pairs and memory management"""
+        try:
+            # Prune before update if needed
+            if self.current_length > self.max_length * 0.9:  # 90% threshold
+                self.prune()
+
+            if self.key_states is None:
+                self.key_states = key
+                self.value_states = value
+            else:
+                # Memory-efficient concatenation
+                new_key = torch.cat([self.key_states, key], dim=2)
+                if torch.cuda.memory_allocated() > torch.cuda.max_memory_allocated() * 0.95:
+                    # Memory pressure - clear and restart
+                    self.clear()
+                    self.key_states = key
+                    self.value_states = value
+                else:
+                    self.key_states = new_key
+                    self.value_states = torch.cat([self.value_states, value], dim=2)
+
+            self.current_length = position + key.size(2)
+
+        except RuntimeError as e:
+            logger.error(f"KV cache update failed: {e}")
+            self.clear()
+            raise
+
+    def prune(self, keep_last_n: int = 4096):
+        """Prune cache to prevent memory growth"""
+        if self.current_length > keep_last_n:
+            if self.key_states is not None:
+                self.key_states = self.key_states[:, :, -keep_last_n:]
+            if self.value_states is not None:
+                self.value_states = self.value_states[:, :, -keep_last_n:]
+            self.position_offset += self.current_length - keep_last_n
+            self.current_length = keep_last_n
+
+    def clear(self):
+        """Enhanced cache clearing with memory management"""
+        if self.key_states is not None:
+            del self.key_states
+        if self.value_states is not None:
+            del self.value_states
+        self.key_states = None
+        self.value_states = None
+        self.current_length = 0
+        self.position_offset = 0
+        torch.cuda.empty_cache()
+
+
+@dataclass
+class GenerationState:
+    """Enhanced state tracking during text generation"""
+
+    batch_size: int = 1
+    current_tokens: List[List[int]] = field(default_factory=lambda: [[]])
+    kv_cache: KVCache = field(default_factory=KVCache)
+    attention_mask: Optional[torch.Tensor] = None
+    last_token_logits: Optional[torch.Tensor] = None
+    generated_tokens: int = 0
+    sequence_length: int = 0
     max_sequence_length: int = 131072
-    prefill_chunk_size: int = 8192
-    decode_chunk_size: int = 2048
-    kv_cache_threshold: float = 0.7  # 70% of available memory
-    stream_chunk_size: int = 16
-    max_concurrent_requests: int = 10
-    timeout_seconds: float = 300.0
+    max_new_tokens: int = 0
+    stop_sequences: List[str] = field(default_factory=list)
+    token_count: int = 0
+    generation_start_time: float = field(default_factory=time.time)
+    max_time: Optional[float] = None
+    memory_pressure_count: int = 0
 
+    def update_state(self, new_tokens: torch.Tensor):
+        """Update generation state with memory monitoring"""
+        for i, token in enumerate(new_tokens):
+            self.current_tokens[i].extend(token.tolist())
+        self.generated_tokens += new_tokens.size(1)
+        self.token_count += new_tokens.numel()
+        self.sequence_length += new_tokens.size(1)
 
-class CacheManager:
-    def __init__(self, total_memory: int = 90 * (1024**3)):  # 90GB for H100
-        self.total_memory = total_memory
-        self.allocated_memory = 0
-        self.cache_lock = Lock()
-        self.kv_caches = {}
+        # Monitor memory pressure
+        if torch.cuda.memory_allocated() > torch.cuda.max_memory_allocated() * 0.9:
+            self.memory_pressure_count += 1
+        else:
+            self.memory_pressure_count = max(0, self.memory_pressure_count - 1)
 
-    def allocate(self, request_id: str, size: int) -> bool:
-        with self.cache_lock:
-            if self.allocated_memory + size > self.total_memory:
-                return False
-            self.allocated_memory += size
-            self.kv_caches[request_id] = size
-            return True
+    def should_stop(self) -> Tuple[bool, Optional[StoppingCriteria]]:
+        """Enhanced stopping criteria check"""
+        if self.memory_pressure_count >= 3:
+            return True, StoppingCriteria.MEMORY_PRESSURE
 
-    def free(self, request_id: str):
-        with self.cache_lock:
-            if request_id in self.kv_caches:
-                self.allocated_memory -= self.kv_caches[request_id]
-                del self.kv_caches[request_id]
+        if self.generated_tokens >= self.max_new_tokens:
+            return True, StoppingCriteria.MAX_TOKENS
+
+        if self.sequence_length >= self.max_sequence_length:
+            return True, StoppingCriteria.SEQUENCE_LENGTH
+
+        if self.max_time and (time.time() - self.generation_start_time) > self.max_time:
+            return True, StoppingCriteria.MAX_TOKENS
+
+        return False, None
+
+    def clear(self):
+        """Enhanced state clearing"""
+        self.current_tokens = [[] for _ in range(self.batch_size)]
+        self.kv_cache.clear()
+        if self.attention_mask is not None:
+            del self.attention_mask
+            self.attention_mask = None
+        if self.last_token_logits is not None:
+            del self.last_token_logits
+            self.last_token_logits = None
+        self.generated_tokens = 0
+        self.sequence_length = 0
+        self.token_count = 0
+        self.memory_pressure_count = 0
+        gc.collect()
+        torch.cuda.empty_cache()
 
 
 class OptimizedInference:
-    def __init__(self, model: PreTrainedModel, tokenizer: PreTrainedTokenizer, config: Optional[InferenceConfig] = None):
-        """Initialize optimized inference with H100-specific optimizations"""
-        # Force cleanup before initialization
-        self.force_cleanup()
+    """
+    Enhanced inference engine for DeepSeek model with improved context handling
+    and memory management for 131k context window.
+    """
 
-        # Set CUDA device first
-        self.device = torch.device("cuda:0")
-        torch.cuda.set_device(self.device)
+    def __init__(self, model: PreTrainedModel, tokenizer: PreTrainedTokenizer, memory_manager: "OptimizedMemoryManager"):
+        # Load and validate configurations
+        with open("config/model_config.json") as f:
+            self.config = json.load(f)
 
-        # Ensure model is on CUDA
-        self.model = model.to(self.device)
-
-        # Verify model device placement
-        if not next(self.model.parameters()).is_cuda:
-            raise RuntimeError("Model not properly loaded on CUDA")
-
+        self.model = model
         self.tokenizer = tokenizer
-        self.config = config or InferenceConfig()
+        self.memory_manager = memory_manager
 
-        # Initialize memory management with H100 optimizations
-        self.cache_manager = CacheManager(
-            total_memory=90 * (1024**3)  # 90GB for H100
-        )
+        # Enhanced configuration
+        self.max_sequence_length = self.config["max_sequence_length"]
+        self.chunk_size = self.config["inference"]["prefill_chunk_size"]
+        self.decode_chunk_size = self.config["inference"]["decode_chunk_size"]
+        self.streaming_chunk_size = self.config["inference"]["streaming_chunk_size"]
 
-        # Initialize request handling
-        self.request_queue = Queue()
-        self.executor = ThreadPoolExecutor(max_workers=self.config.max_concurrent_requests)
+        # Context window settings
+        self.context_config = self.config["context_window"]
+        self.chunk_overlap = self.context_config["chunk_overlap"]
+        self.attention_sink = self.context_config.get("attention_sink", True)
+        self.compression_ratio = self.context_config.get("compression_factor", 4)
+        self.max_chunks = self.context_config.get("max_chunks", 8)
 
-        # Initialize CUDA streams for concurrent operations
-        self.cuda_streams = {
-            "main": torch.cuda.Stream(),
-            "prefetch": torch.cuda.Stream(priority=-1),
-        }
+        # Initialize enhanced state tracking
+        self.state: Optional[GenerationState] = None
+        self.inference_lock = asyncio.Lock()
+        self.generation_count = 0
+        self.last_memory_check = 0
 
-        # Set CUDA memory configurations
-        torch.cuda.set_per_process_memory_fraction(0.99, self.device)  # Use most of VRAM
+        # Setup and optimization
+        self._setup_model_settings()
+        self._setup_tokenizer()
+        self._optimize_for_inference()
 
-        # Apply model optimizations after device setup
-        self._setup_model_optimizations()
+        logger.info(f"Initialized enhanced inference engine - Context window: {self.max_sequence_length}, Chunk size: {self.chunk_size}, Overlap: {self.chunk_overlap}")
 
-        logger.info(f"Initialized OptimizedInference with {torch.cuda.get_device_name()} ({torch.cuda.get_device_properties(self.device).total_memory / 1024**3:.1f}GB VRAM)")
-
-    def _setup_model_optimizations(self):
-        """Apply advanced optimizations to the model"""
-        # Set thread optimizations
-        torch.set_num_threads(40)  # Match vCPU count
-        torch.set_num_interop_threads(40)  # Match vCPU count
-
+    def _setup_model_settings(self):
+        """Enhanced model-specific settings"""
         self.model.eval()
-        self.model = torch.compile(self.model, fullgraph=False, dynamic=True, backend="inductor", mode="max-autotune")
 
-        # Enable memory efficient attention
-        if hasattr(self.model, "config"):
+        # Configure advanced attention settings
+        if hasattr(self.model.config, "use_flash_attention_2"):
+            self.model.config.use_flash_attention_2 = self.config["attention"]["use_flash_attention"]
+
+        # Set optimized sliding window
+        if self.config["attention"]["sliding_window"]:
+            window_size = self.config["attention"]["sliding_window"]
+            self.model.config.sliding_window = window_size
+
+        # Optimize KV cache
+        if hasattr(self.model.config, "use_cache"):
+            self.model.config.use_cache = self.config["optimization"]["use_cache"]
+
+        # Set attention implementation
+        if hasattr(self.model.config, "attention_implementation"):
+            impl = self.config["attention"]["attention_implementation"]
+            self.model.config.attention_implementation = impl
+
+    def _setup_tokenizer(self):
+        """Enhanced tokenizer configuration"""
+        self.tokenizer.pad_token = self.tokenizer.eos_token
+        self.tokenizer.padding_side = "left"
+        self.tokenizer.model_max_length = self.max_sequence_length
+
+        # Enhanced code-specific tokenization
+        if self.config["code_specific"]["preserve_indentation"]:
+            indent_tokens = [" " * i for i in range(2, 17, 2)]
+            self.tokenizer.add_special_tokens({"additional_special_tokens": indent_tokens})
+
+    def _optimize_for_inference(self):
+        """Apply inference optimizations"""
+        # Enable memory-efficient attention if available
+        if hasattr(self.model.config, "use_memory_efficient_attention"):
             self.model.config.use_memory_efficient_attention = True
-            self.model.config.use_flash_attention_2 = True
-            self.model.config.pretraining_tp = 1  # Disable tensor parallelism for merged weights
-            self.model.config.max_position_embeddings = 131072
-            self.model.config.rope_scaling = {"type": "dynamic", "factor": 4.0}
 
-        # Optimize for H100
-        torch.backends.cuda.matmul.allow_tf32 = True
-        torch.backends.cuda.enable_flash_sdp(True)
-        torch.backends.cudnn.allow_tf32 = True
-        torch.backends.cudnn.benchmark = True
+        # Configure attention sinks for long sequences
+        if self.attention_sink and hasattr(self.model.config, "attention_sink"):
+            self.model.config.attention_sink = True
+            self.model.config.attention_sink_size = min(2048, self.chunk_size // 8)
 
-        # Set optimal dtypes for different operations
-        self.dtype_config = {"kv_cache": torch.bfloat16, "attention": torch.bfloat16, "intermediate": torch.bfloat16, "output": torch.float32}
+        # Enable fused operations if available
+        if hasattr(torch._C, "_jit_set_profiling_executor"):
+            torch._C._jit_set_profiling_executor(True)
 
-        # Pre-allocate buffers for common operations with pinned memory
-        # Create tensors on CPU first, then pin them for efficient transfer
-        self.static_buffers = {
-            "position_ids": torch.arange(self.config.max_sequence_length, device=self.device),
-            "attention_mask": torch.ones((1, self.config.max_sequence_length), device=self.device),
-        }
+    def _create_attention_pattern(self, sequence_length: int, sliding_window: Optional[int] = None) -> torch.Tensor:
+        """Create optimized attention pattern with sink tokens"""
+        device = next(self.model.parameters()).device
 
-        # Configure memory pools for optimal H100 performance
-        torch.cuda.memory.set_per_process_memory_fraction(0.95)  # Reserve some for system
-        torch.cuda.memory.set_per_process_memory_fraction(0.99, self.device)  # Device-specific setting
+        if sliding_window and sequence_length > sliding_window:
+            # Enhanced sliding window with sink tokens
+            mask = torch.zeros((1, sequence_length, sequence_length), device=device)
+            sink_size = min(256, sliding_window // 4)
 
-    @contextmanager
-    def _inference_context(self):
-        """Context manager for inference optimizations"""
+            for i in range(sequence_length):
+                # Add sink token attention
+                mask[0, i, :sink_size] = 1
+
+                # Add sliding window attention
+                start = max(sink_size, i - sliding_window // 2)
+                end = min(sequence_length, i + sliding_window // 2)
+                mask[0, i, start:end] = 1
+
+                # Add local attention
+                local_start = max(sink_size, i - 128)
+                local_end = min(sequence_length, i + 128)
+                mask[0, i, local_start:local_end] = 1
+        else:
+            mask = torch.ones((1, sequence_length, sequence_length), device=device)
+
+        return mask
+
+    async def _handle_memory_pressure(self, required_memory: int) -> bool:
+        """Enhanced memory pressure handling"""
         try:
-            # Ensure model is on correct device
-            if hasattr(self.model, "device") and self.model.device != self.device:
-                self.model.to(self.device)
+            current_free = torch.cuda.mem_get_info()[0]
+            if current_free < required_memory:
+                # Try aggressive cleanup first
+                await self.memory_manager._aggressive_cleanup()
+                new_free = torch.cuda.mem_get_info()[0]
 
-            torch.cuda.empty_cache()
-            gc.collect()
+                if new_free < required_memory:
+                    # If still not enough, try emergency cleanup
+                    await self.memory_manager.emergency_cleanup()
+                    new_free = torch.cuda.mem_get_info()[0]
 
-            # Log memory before
-            allocated_before = torch.cuda.memory_allocated() / (1024**3)
-            reserved_before = torch.cuda.memory_reserved() / (1024**3)
-            logger.info(f"Memory before inference - Allocated: {allocated_before:.2f}GB, Reserved: {reserved_before:.2f}GB")
-
-            with torch.autocast(device_type="cuda", dtype=torch.bfloat16, enabled=True):
-                with torch.no_grad():
-                    yield
-        finally:
-            torch.cuda.empty_cache()
-            gc.collect()
-            # Log memory after
-            allocated_after = torch.cuda.memory_allocated() / (1024**3)
-            reserved_after = torch.cuda.memory_reserved() / (1024**3)
-            logger.info(f"Memory after inference - Allocated: {allocated_after:.2f}GB, Reserved: {reserved_after:.2f}GB")
-
-    def _calculate_memory_requirements(self, batch_size: int, seq_length: int) -> int:
-        """Update memory calculations for better H100 utilization"""
-        # Add to existing calculations:
-        extra_buffer = 2 * (1024**3)  # 2GB extra buffer for H100
-
-        # Calculate base memory requirements using total sequence length
-        base_memory = self._calculate_base_memory(batch_size, seq_length)
-
-        return min(self.cache_manager.total_memory - extra_buffer, base_memory)
-
-    def _calculate_base_memory(self, batch_size: int, seq_length: int) -> int:
-        """Calculate base memory requirements per sequence"""
-        hidden_size = self.model.config.hidden_size
-        num_layers = self.model.config.num_hidden_layers
-        bytes_per_param = 2  # Assuming bfloat16
-
-        # Memory for KV cache
-        kv_cache_memory = batch_size * seq_length * num_layers * hidden_size * bytes_per_param * 2  # x2 for K and V
-
-        # Memory for intermediate activations (estimate)
-        activation_memory = batch_size * seq_length * hidden_size * num_layers * bytes_per_param
-
-        return kv_cache_memory + activation_memory
-
-    def _optimize_batch_size(self, input_lengths: List[int]) -> int:
-        """Dynamically optimize batch size based on input lengths"""
-        max_length = max(input_lengths)
-        memory_per_sequence = self._calculate_memory_requirements(1, max_length)
-        available_memory = int(self.cache_manager.total_memory * self.config.kv_cache_threshold)
-
-        optimal_batch_size = min(available_memory // memory_per_sequence, self.config.max_batch_size, len(input_lengths))
-
-        return max(1, optimal_batch_size)
-
-    def force_cleanup(self):
-        """Aggressive memory cleanup"""
-        try:
-            # Clear CUDA cache multiple ways
-            torch.cuda.empty_cache()
-            torch.cuda.memory.empty_cache()
-            if hasattr(torch.cuda, "memory_stats"):
-                torch.cuda.memory_stats(device=None)
-            if hasattr(torch.cuda, "reset_max_memory_cached"):
-                torch.cuda.reset_max_memory_cached()
-
-            # Reset peak memory stats
-            torch.cuda.reset_peak_memory_stats()
-            torch.cuda.reset_accumulated_memory_stats()
-
-            # Reset pytorch caches
-            if hasattr(torch, "_dynamo"):
-                try:
-                    torch._dynamo.reset()
-                    logger.info("Dynamo cache reset successful")
-                except Exception as e:
-                    logger.warning(f"Error resetting Dynamo cache: {e}")
-
-            # Force garbage collection multiple times
-            for _ in range(5):
-                gc.collect()
-
-            # Additional GPU memory operations
-            if hasattr(torch.cuda, "synchronize"):
-                torch.cuda.synchronize()
-
-            # Get current memory usage for logging
-            allocated = torch.cuda.memory_allocated() / (1024**3)
-            reserved = torch.cuda.memory_reserved() / (1024**3)
-            logger.info(f"After cleanup - Allocated: {allocated:.2f}GB, Reserved: {reserved:.2f}GB")
-
+                return new_free >= required_memory
+            return True
         except Exception as e:
-            logger.error(f"Error during force cleanup: {e}")
+            logger.error(f"Error handling memory pressure: {e}")
+            return False
 
-    async def _process_batch(self, input_ids: torch.Tensor, attention_mask: Optional[torch.Tensor], generation_config: Dict[str, Any]) -> AsyncGenerator[torch.Tensor, None]:
-        """Process a batch of inputs with optimized memory usage"""
-        batch_size, seq_length = input_ids.shape
+    async def _process_long_input(self, input_ids: torch.Tensor, attention_mask: Optional[torch.Tensor] = None) -> AsyncGenerator[torch.Tensor, None]:
+        """Enhanced processing for long inputs"""
+        total_length = input_ids.size(1)
 
-        # Ensure inputs are on the correct device
-        input_ids = input_ids.to(self.device)
-        if attention_mask is not None:
-            attention_mask = attention_mask.to(self.device)
+        # Process normally if within chunk size
+        if total_length <= self.chunk_size:
+            if not await self._handle_memory_pressure(self.chunk_size * 4 * input_ids.size(0)):
+                raise RuntimeError("Insufficient memory for processing")
 
-            # Handle attention mask with experimental control flow
-            from functorch.experimental import control_flow
+            outputs = self.model(input_ids=input_ids, attention_mask=attention_mask, use_cache=True, return_dict=True)
+            yield outputs.logits[:, -1:, :]
+            return
 
-            def process_attention_mask(mask):
-                return mask if mask is not None else torch.ones_like(input_ids)
+        # Enhanced chunked processing with compression
+        compressed_chunks = []
+        overlap_size = self.chunk_overlap
 
-            attention_mask = control_flow.cond(attention_mask is not None, lambda: attention_mask, lambda: torch.ones_like(input_ids))
+        for chunk_start in range(0, total_length, self.chunk_size - overlap_size):
+            # Check memory before processing chunk
+            if not await self._handle_memory_pressure(self.chunk_size * 8):
+                logger.warning("Memory pressure detected during chunk processing")
+                await self.memory_manager.emergency_cleanup()
 
-        # Calculate memory requirements
-        memory_required = self._calculate_memory_requirements(batch_size, seq_length)
-        memory_required = self._calculate_memory_requirements(batch_size, seq_length)
-        if not self.cache_manager.allocate("batch", memory_required):
-            raise RuntimeError("Insufficient memory for batch processing")
+            chunk_end = min(chunk_start + self.chunk_size, total_length)
 
-        # Process in chunks for long sequences
-        for chunk_start in range(0, seq_length, self.config.prefill_chunk_size):
-            chunk_end = min(chunk_start + self.config.prefill_chunk_size, seq_length)
+            # Extract chunk
             chunk_input_ids = input_ids[:, chunk_start:chunk_end]
+            chunk_attention = attention_mask[:, chunk_start:chunk_end] if attention_mask is not None else None
 
-            chunk_attention_mask = None
-            if attention_mask is not None:
-                chunk_attention_mask = attention_mask[:, chunk_start:chunk_end]
-
+            # Process chunk
             try:
-                # Process chunk with experimental control flow handling
-                with self._inference_context():
-                    outputs = self.model(input_ids=chunk_input_ids, attention_mask=chunk_attention_mask, use_cache=True, return_dict=True)
-                chunk_attention_mask = None
-                if attention_mask is not None:
-                    chunk_attention_mask = attention_mask[:, chunk_start:chunk_end]
-            except Exception as e:
-                # Process chunk with experimental control flow handling
-                with self._inference_context():
-                    outputs = self.model(input_ids=chunk_input_ids, attention_mask=chunk_attention_mask, use_cache=True, return_dict=True)
-                torch.cuda.empty_cache()
-                yield outputs.logits[:, -1:].to(self.device)
+                outputs = self.model(input_ids=chunk_input_ids, attention_mask=chunk_attention, use_cache=True, return_dict=True)
 
-        self.cache_manager.free("batch")
+                # Compress chunk if needed
+                if len(compressed_chunks) >= self.max_chunks:
+                    compressed_chunks = self._compress_chunks(compressed_chunks)
+
+                compressed_chunks.append(outputs.logits[:, -1:, :])
+
+                # Yield last token logits
+                yield outputs.logits[:, -1:, :]
+
+            except RuntimeError as e:
+                logger.error(f"Error processing chunk: {e}")
+                await self.memory_manager.emergency_cleanup()
+                raise
+
+    def _compress_chunks(self, chunks: List[torch.Tensor], compression_factor: int = 4) -> List[torch.Tensor]:
+        """Compress chunks to manage memory for long sequences"""
+        if len(chunks) <= 1:
+            return chunks
+
+        compressed = []
+        chunk_size = chunks[0].size(1)
+
+        for i in range(0, len(chunks), compression_factor):
+            group = chunks[i : i + compression_factor]
+            if len(group) > 1:
+                # Average the chunks in the group
+                compressed_chunk = torch.mean(torch.cat(group, dim=1), dim=1, keepdim=True)
+                compressed.append(compressed_chunk)
+            else:
+                compressed.extend(group)
+
+        return compressed
+
+    def _apply_repetition_penalty(self, logits: torch.Tensor, generated_tokens: List[int], penalty: float) -> torch.Tensor:
+        """Apply repetition penalty to logits with dynamic scaling"""
+        if not generated_tokens:
+            return logits
+
+        # Create penalty tensor with dynamic scaling
+        penalty_tensor = torch.ones_like(logits)
+        unique_tokens = list(set(generated_tokens[-1000:]))  # Consider last 1000 tokens
+        penalty_tensor[unique_tokens] = penalty
+
+        # Scale penalty based on token frequency
+        token_counts = {}
+        for token in generated_tokens[-1000:]:
+            token_counts[token] = token_counts.get(token, 0) + 1
+
+        for token, count in token_counts.items():
+            if count > 3:  # Increase penalty for frequently repeated tokens
+                penalty_tensor[token] *= 1.0 + 0.1 * min(count - 3, 5)
+
+        # Apply penalty
+        logits = torch.where(logits > 0, logits / penalty_tensor, logits * penalty_tensor)
+        return logits
+
+    async def _handle_code_specific_generation(self, logits: torch.Tensor, generated: List[int], generation_config: Dict) -> torch.Tensor:
+        """Enhanced code-specific generation with advanced features"""
+        # Apply repetition penalty with dynamic scaling
+        penalty = generation_config["repetition_penalty"]
+        if len(generated) > 100:  # Increase penalty for longer sequences
+            penalty *= 1.2
+
+        logits = self._apply_repetition_penalty(logits, generated, penalty)
+
+        if self.config["code_specific"]["language_specific_prompting"]:
+            # Enhanced code token biasing
+            if hasattr(self.tokenizer, "code_tokens"):
+                code_tokens = self.tokenizer.code_tokens
+                logits[:, code_tokens] *= 1.2  # Increased bias
+
+            # Bias for structural tokens
+            structural_tokens = self._get_structural_tokens()
+            if structural_tokens:
+                logits[:, structural_tokens] *= 1.1
+
+            # Handle indentation
+            if self.config["code_specific"]["preserve_indentation"]:
+                indent_level = self._get_current_indent_level(generated)
+                indent_tokens = self._get_indent_tokens(indent_level)
+                logits[:, indent_tokens] *= 1.15
+
+        return logits
+
+    def _get_structural_tokens(self) -> List[int]:
+        """Get structural code tokens"""
+        structural = []
+        for token in ["def", "class", "if", "for", "while", "return", "{", "}", "(", ")"]:
+            try:
+                token_ids = self.tokenizer.encode(token, add_special_tokens=False)
+                structural.extend(token_ids)
+            except:
+                continue
+        return structural
+
+    def _get_current_indent_level(self, generated_tokens: List[int]) -> int:
+        """Analyze current indentation level"""
+        if not generated_tokens:
+            return 0
+
+        # Get last newline position
+        text = self.tokenizer.decode(generated_tokens[-50:])  # Last 50 tokens
+        lines = text.split("\n")
+        if not lines:
+            return 0
+
+        # Count leading spaces
+        last_line = lines[-1]
+        indent_level = 0
+        for char in last_line:
+            if char == " ":
+                indent_level += 1
+            else:
+                break
+        return indent_level // 2  # Assuming 2 spaces per level
+
+    def _get_indent_tokens(self, level: int) -> List[int]:
+        """Get tokens for given indent level"""
+        indent_str = " " * (level * 2)
+        try:
+            return self.tokenizer.encode(indent_str, add_special_tokens=False)
+        except:
+            return []
+
+    @asynccontextmanager
+    async def _inference_context(self):
+        """Enhanced context manager for inference operations"""
+        async with self.inference_lock:
+            async with self.memory_manager.allocation_context():
+                monitoring_task = None
+                try:
+                    # Start memory monitoring
+                    monitoring_task = asyncio.create_task(self._monitor_memory())
+
+                    with torch.inference_mode():
+                        yield
+
+                finally:
+                    # Cancel monitoring and cleanup
+                    if monitoring_task:
+                        monitoring_task.cancel()
+                    torch.cuda.empty_cache()
+                    gc.collect()
+
+    async def _monitor_memory(self):
+        """Monitor memory usage during generation"""
+        while True:
+            try:
+                memory_info = self.memory_manager.get_memory_info()
+                if memory_info["utilization"] > 90:
+                    logger.warning("High memory utilization detected")
+                    await self.memory_manager.emergency_cleanup()
+                await asyncio.sleep(0.1)
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                logger.error(f"Memory monitoring error: {e}")
 
     async def generate_stream(self, prompt: Union[str, List[str]], generation_config: Optional[Dict[str, Any]] = None) -> AsyncGenerator[str, None]:
-        """Stream generate text with optimized batch processing"""
+        """Enhanced streaming text generation with improved handling"""
         if isinstance(prompt, str):
             prompt = [prompt]
 
-        # Tokenization try-except block
         try:
-            # Validate input prompt
-            if not prompt:
-                logger.warning("Empty prompt provided")
-                return
+            async with self._inference_context():
+                # Prepare enhanced generation config
+                gen_config = {
+                    **self.config["generation"],
+                    **(generation_config or {}),
+                    "max_new_tokens": min(
+                        generation_config.get("max_new_tokens", self.config["attention"]["max_new_tokens"]),
+                        self.max_sequence_length - 100,  # Reserve tokens for prompt
+                    ),
+                }
 
-            # Check maximum concurrent requests
-            if self.request_queue.qsize() >= self.config.max_concurrent_requests:
-                raise RuntimeError("Maximum concurrent requests exceeded")
-
-            # Tokenize with explicit device placement
-            tokenized = self.tokenizer(prompt, padding=True, truncation=True, max_length=self.config.max_sequence_length, return_tensors="pt")
-
-            # Ensure all tensors are on GPU
-            input_ids = tokenized["input_ids"].to(self.device)
-            attention_mask = tokenized["attention_mask"].to(self.device) if "attention_mask" in tokenized else None
-
-            # Verify tensor placement
-            if not input_ids.is_cuda:
-                raise RuntimeError("input_ids not on CUDA device")
-            if attention_mask is not None and not attention_mask.is_cuda:
-                raise RuntimeError("attention_mask not on CUDA device")
-
-            tokenized_inputs = {"input_ids": input_ids, "attention_mask": attention_mask}
-
-        except RuntimeError as e:
-            logger.error(f"Runtime error during tokenization: {e}")
-            yield f"Error: {str(e)}"
-            return
-        except Exception as e:
-            logger.error(f"Error in tokenization: {e}")
-            yield f"Tokenization error: {str(e)}"
-            return
-
-        # Generation try-except block
-        try:
-            # Optimize batch size
-            input_lengths = tokenized_inputs["input_ids"].shape[1]
-            batch_size = self._optimize_batch_size([input_lengths])
-
-            # Set up generation config
-            default_config = {
-                "max_new_tokens": 4096,
-                "do_sample": True,
-                "temperature": 0.7,
-                "top_p": 0.95,
-                "repetition_penalty": 1.1,
-                "pad_token_id": self.tokenizer.pad_token_id,
-                "eos_token_id": self.tokenizer.eos_token_id,
-                "stream_chunk_size": self.config.stream_chunk_size,
-            }
-            generation_config = {**default_config, **(generation_config or {})}
-
-            # Stream generation
-            generated = []
-            generated_texts = [[] for _ in range(tokenized_inputs["input_ids"].size(0))]
-
-            async for logits in self._process_batch(tokenized_inputs["input_ids"], tokenized_inputs["attention_mask"], generation_config):
+                # Enhanced tokenization with length check
                 try:
-                    # Sample from logits
-                    next_token_logits = logits[:, -1, :]
-                    if generation_config["do_sample"]:
-                        probs = F.softmax(next_token_logits / generation_config["temperature"], dim=-1)
+                    tokenized = self.tokenizer(prompt, padding=True, truncation=True, max_length=self.max_sequence_length - gen_config["max_new_tokens"], return_tensors="pt")
+                except Exception as e:
+                    logger.error(f"Tokenization error: {e}")
+                    yield f"Error: Input too long or invalid"
+                    return
+
+                # Move tensors to GPU with memory check
+                if not await self._handle_memory_pressure(tokenized["input_ids"].numel() * 8):
+                    yield f"Error: Insufficient memory for input"
+                    return
+
+                input_ids = tokenized["input_ids"].cuda()
+                attention_mask = tokenized.get("attention_mask", None)
+                if attention_mask is not None:
+                    attention_mask = attention_mask.cuda()
+
+                # Initialize enhanced generation state
+                self.state = GenerationState(
+                    batch_size=len(prompt), max_sequence_length=self.max_sequence_length, max_new_tokens=gen_config["max_new_tokens"], max_time=gen_config.get("max_time", 600)
+                )
+                self.state.kv_cache.max_length = self.max_sequence_length
+
+                # Create optimized attention pattern
+                attention_pattern = self._create_attention_pattern(input_ids.size(1), self.config["attention"]["sliding_window"])
+
+                # Enhanced generation loop
+                async for logits in self._process_long_input(input_ids, attention_mask):
+                    # Check stopping criteria
+                    should_stop, reason = self.state.should_stop()
+                    if should_stop:
+                        logger.info(f"Generation stopped: {reason}")
+                        break
+
+                    # Apply enhanced code-specific optimizations
+                    next_token_logits = await self._handle_code_specific_generation(logits[:, -1, :], self.state.current_tokens[0], gen_config)
+
+                    # Enhanced token sampling
+                    if gen_config["do_sample"]:
+                        # Apply temperature with dynamic scaling
+                        temperature = gen_config["temperature"]
+                        if self.state.memory_pressure_count > 0:
+                            temperature *= 1.1  # Increase randomness under memory pressure
+
+                        probs = F.softmax(next_token_logits / temperature, dim=-1)
+
+                        # Apply top-k if configured
+                        if gen_config.get("top_k", 0) > 0:
+                            indices_to_remove = probs < torch.topk(probs, gen_config["top_k"])[0][..., -1, None]
+                            probs[indices_to_remove] = 0.0
+                            probs = probs / probs.sum(dim=-1, keepdim=True)
+
                         next_tokens = torch.multinomial(probs, num_samples=1)
                     else:
                         next_tokens = torch.argmax(next_token_logits, dim=-1, keepdim=True)
 
-                    generated.append(next_tokens)
+                    # Update state with memory monitoring
+                    self.state.update_state(next_tokens)
 
-                    # Decode and yield new tokens
-                    if len(generated) >= generation_config["stream_chunk_size"]:
-                        tokens = torch.cat(generated, dim=-1)
+                    # Memory-efficient token processing
+                    tokens = next_tokens.squeeze()
 
-                        # Decode each sequence in the batch individually
-                        for i in range(tokens.size(0)):
-                            text = self.tokenizer.decode(tokens[i], skip_special_tokens=True)
+                    # Decode with cleanup
+                    text = self.tokenizer.decode(tokens, skip_special_tokens=True, clean_up_tokenization_spaces=True)
 
-                            # Remove previously generated text to yield only the new part
-                            text_diff = text[len("".join(generated_texts[i])) :]
-                            generated_texts[i].append(text_diff)
-                            yield text_diff
-                        generated = []
+                    if text.strip():
+                        yield text
 
-                except torch.cuda.OutOfMemoryError:
-                    logger.error("CUDA out of memory during token generation")
-                    torch.cuda.empty_cache()
-                    yield "Error: GPU memory exhausted"
-                    return
-                except Exception as e:
-                    logger.error(f"Error during token generation: {e}")
-                    yield f"Generation error: {str(e)}"
-                    return
+                    # Periodic memory check
+                    if self.state.generated_tokens % 100 == 0:
+                        if not await self._handle_memory_pressure(1024 * 1024):  # 1MB buffer
+                            logger.warning("Memory pressure detected during generation")
+                            break
 
-            # Yield any remaining tokens
-            if generated:
-                try:
-                    tokens = torch.cat(generated, dim=-1)
+            # Enhanced cleanup
+            if self.state:
+                self.state.clear()
+                self.state = None
 
-                    # Decode each sequence in the batch individually
-                    for i in range(tokens.size(0)):
-                        text = self.tokenizer.decode(tokens[i], skip_special_tokens=True)
-
-                        # Remove previously generated text to yield only the new part
-                        text_diff = text[len("".join(generated_texts[i])) :]
-                        generated_texts[i].append(text_diff)
-                        yield text_diff
-                except Exception as e:
-                    logger.error(f"Error decoding final tokens: {e}")
-                    yield f"Error in final decoding: {str(e)}"
-                    return
-
-        except asyncio.TimeoutError:
-            logger.error("Generation request timed out")
-            yield "Generation request timed out"
-        except RuntimeError as memory_error:
-            logger.error(f"Memory allocation error: {memory_error}")
-            yield f"Memory allocation error: {str(memory_error)}"
         except Exception as e:
-            logger.error(f"Unexpected error in generation: {e}")
-            yield f"Unexpected generation error: {str(e)}"
+            logger.error(f"Generation error: {e}")
+            yield f"\nError during generation: {str(e)}"
 
-    def __call__(self, *args, **kwargs):
-        """Synchronous interface for generation"""
+        finally:
+            # Final cleanup
+            await self.memory_manager.emergency_cleanup()
 
-        async def run_async():
-            results = []
-            async for result in self.generate_stream(*args, **kwargs):
-                results.append(result)
-            return "".join(results)
+    async def __call__(self, prompt: Union[str, List[str]], **kwargs) -> str:
+        """Enhanced synchronous interface for generation"""
+        start_time = time.time()
+        result = []
 
-        return asyncio.run(run_async())
+        try:
+            async for chunk in self.generate_stream(prompt, kwargs.get("generation_config")):
+                result.append(chunk)
 
+                # Check time limit
+                if time.time() - start_time > kwargs.get("timeout", 600):
+                    logger.warning("Generation timeout reached")
+                    break
+
+        except Exception as e:
+            logger.error(f"Generation call error: {e}")
+            return f"Error: {str(e)}"
+
+        return "".join(result)
 
