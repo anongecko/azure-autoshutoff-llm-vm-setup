@@ -26,8 +26,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Create app directory
 WORKDIR /app
 
-# Install Python dependencies first to leverage Docker cache
+# Install base Python dependencies
+RUN pip3 install --no-cache-dir packaging wheel setuptools
+
+# Copy requirements and install them in two steps
 COPY requirements.txt .
+
+# First install PyTorch and other base packages
+RUN pip3 install --no-cache-dir torch==2.1.2 ninja==1.11.1
+
+# Then install the rest of the packages
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Copy project files
