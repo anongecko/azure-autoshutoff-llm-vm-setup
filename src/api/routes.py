@@ -235,45 +235,39 @@ async def format_streaming_response(generator: AsyncGenerator[str, None], reques
                     # Format buffered content
                     formatted_chunk = await format_code_chunk(buffer, language=language, include_line_numbers=MODEL_CONFIG["code_specific"]["enable_line_numbers"])
 
-                    yield f"data: {
-                        json.dumps(
-                            {
-                                'id': request_id,
-                                'object': 'chat.completion.chunk',
-                                'created': int(time.time()),
-                                'model': MODEL_CONFIG['model_name'],
-                                'choices': [{'index': 0, 'delta': {'content': formatted_chunk}, 'finish_reason': None}],
-                            }
-                        )
-                    }\n\n"
+                    yield "data: " + json.dumps({
+                        "id": request_id,
+                        "object": "chat.completion.chunk",
+                        "created": int(time.time()),
+                        "model": MODEL_CONFIG["model_name"],
+                        "choices": [{"index": 0, "delta": {"content": formatted_chunk}, "finish_reason": None}],
+                    }) + "\n\n"
                     buffer = ""
 
         # Flush remaining buffer
         if buffer:
             formatted_chunk = await format_code_chunk(buffer, language=language, include_line_numbers=MODEL_CONFIG["code_specific"]["enable_line_numbers"])
-            yield f"data: {
-                json.dumps(
-                    {
-                        'id': request_id,
-                        'object': 'chat.completion.chunk',
-                        'created': int(time.time()),
-                        'model': MODEL_CONFIG['model_name'],
-                        'choices': [{'index': 0, 'delta': {'content': formatted_chunk}, 'finish_reason': None}],
-                    }
-                )
-            }\n\n"
+            yield "data: " + json.dumps({
+                "id": request_id,
+                "object": "chat.completion.chunk",
+                "created": int(time.time()),
+                "model": MODEL_CONFIG["model_name"],
+                "choices": [{"index": 0, "delta": {"content": formatted_chunk}, "finish_reason": None}],
+            }) + "\n\n"
 
         # Send completion
-        yield f"data: {
-            json.dumps(
-                {'id': request_id, 'object': 'chat.completion.chunk', 'created': int(time.time()), 'model': MODEL_CONFIG['model_name'], 'choices': [{'index': 0, 'delta': {}, 'finish_reason': 'stop'}]}
-            )
-        }\n\n"
+        yield "data: " + json.dumps({
+            "id": request_id,
+            "object": "chat.completion.chunk",
+            "created": int(time.time()),
+            "model": MODEL_CONFIG["model_name"],
+            "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}]
+        }) + "\n\n"
         yield "data: [DONE]\n\n"
 
     except Exception as e:
         logger.error(f"Streaming error: {e}")
-        yield f"data: {json.dumps({'error': str(e)})}\n\n"
+        yield "data: " + json.dumps({"error": str(e)}) + "\n\n"
 
 
 def prepare_generation_config(request: Union[ChatRequest, CompletionRequest], language: Optional[str] = None) -> Dict[str, Any]:
@@ -530,4 +524,3 @@ def setup_routes(app: FastAPI):
         return response
 
     logger.info(f"Routes configured - Endpoints: {list(API_CONFIG['endpoints'].values())}, Rate Limit: {API_CONFIG['rate_limit']['requests_per_minute']} rpm")
-
