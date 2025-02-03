@@ -74,35 +74,68 @@ async def setup_cuda_environment():
 
 
 async def initialize_resources():
-    """Initialize required resources"""
+    """Initialize all required resources with proper ordering and timeout"""
     global model_manager, memory_manager
 
     try:
         logger.info("Starting resource initialization...")
 
+        # Set up CUDA environment first
         await setup_cuda_environment()
 
         # Initialize memory manager
+        logger.info("Initializing memory manager...")
         memory_manager = OptimizedMemoryManager()
 
+        # Initial GPU memory check
+        initial_gpu_free, initial_gpu_total = torch.cuda.mem_get_info()
+        initial_gpu_free_gb = initial_gpu_free / (1024**3)
+        initial_gpu_total_gb = initial_gpu_total / (1024**3)
+        logger.info(f"Initial GPU memory - Free: {initial_gpu_free_gb:.2f}GB, Total: {initial_gpu_total_gb:.2f}GB")
+
         # Initialize model loader
+        logger.info("Initializing model loader...")
         model_loader = EnhancedModelLoader(memory_manager=memory_manager)
-        model, tokenizer = await model_loader.load_model()
+
+        # Load model and tokenizer with timeout
+        try:
+            # Use wait_for instead of timeout context manager
+            model, tokenizer = await asyncio.wait_for(
+                model_loader.load_model(),
+                timeout=600  # 10 minute timeout
+            )
+        except asyncio.TimeoutError:
+            logger.error("Model loading timed out after 10 minutes")
+            await memory_manager._aggressive_cleanup()
+            raise RuntimeError("Model loading timed out")
 
         # Initialize model manager
-        model_manager = ModelManager(model=model, tokenizer=tokenizer, memory_manager=memory_manager, model_path=MODEL_CONFIG["model_path"])
+        logger.info("Initializing model manager...")
+        model_manager = ModelManager(
+            model=model,
+            tokenizer=tokenizer,
+            memory_manager=memory_manager,
+            model_path=MODEL_CONFIG["model_path"]
+        )
 
+        # Verify loading was successful
         if not model_manager.is_loaded:
             raise RuntimeError("Model failed to initialize properly")
 
-        logger.info("Resource initialization completed successfully")
+        # Log final memory status
+        final_memory = memory_manager.get_memory_info()
+        logger.info(
+            f"Resource initialization completed:\n"
+            f"- Allocated: {final_memory['allocated_gb']:.2f}GB\n"
+            f"- Reserved: {final_memory['reserved_gb']:.2f}GB\n"
+            f"- Free: {final_memory['free_gb']:.2f}GB"
+        )
 
     except Exception as e:
         logger.error(f"Failed to initialize resources: {e}")
         if memory_manager:
             await memory_manager._aggressive_cleanup()
         raise
-
 
 async def cleanup_resources():
     """Cleanup resources"""

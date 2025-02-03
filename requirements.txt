@@ -1,5 +1,6 @@
+numpy==1.24.3
 torch==2.1.2
-transformers==4.36.2
+transformers==4.43.1
 fastapi==0.109.0
 uvicorn[standard]==0.27.0
 pydantic==2.5.3

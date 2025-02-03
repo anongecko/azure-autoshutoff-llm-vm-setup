@@ -129,7 +129,7 @@ class EnhancedModelLoader:
         if not self.model_path.exists():
             return f"Model path does not exist: {self.model_path}"
 
-        required_files = ["config.json", "model.safetensors"]
+        required_files = ["config.json", "Deepseek-R1-Distill-Qwen-32B-Merged.safetensors"]
         missing_files = [f for f in required_files if not (self.model_path / f).exists()]
         if missing_files:
             return f"Missing required files: {', '.join(missing_files)}"
@@ -144,36 +144,35 @@ class EnhancedModelLoader:
         return None
 
     def _configure_torch_settings(self) -> None:
-        """Configure optimized PyTorch settings"""
-        # Enhanced CUDA configuration
-        os.environ["PYTORCH_CUDA_ALLOC_CONF"] = (
-            f"expandable_segments:True,"
-            f"garbage_collection_threshold:{self.hardware_config['offload_config']['cpu_offload_threshold']},"
-            f"max_split_size_mb:512,"
-            f"roundup_power2_divisions:16,"
-            f"backend:native,"
-            f"max_split_size_mb:512"
-        )
+            """Configure PyTorch settings for optimal performance"""
+            try:
+                # Set environment variables first
+                os.environ["PYTORCH_CUDA_ALLOC_CONF"] = (
+                    f"expandable_segments:True,"
+                    f"garbage_collection_threshold:{self.hardware_config['offload_config']['cpu_offload_threshold']},"
+                    f"max_split_size_mb:512,"
+                    f"roundup_power2_divisions:16"
+                )
+                os.environ["OMP_NUM_THREADS"] = "40"
+                os.environ["MKL_NUM_THREADS"] = "40"
 
-        # Optimal thread configuration
-        os.environ["OMP_NUM_THREADS"] = "40"
-        os.environ["MKL_NUM_THREADS"] = "40"
-        torch.set_num_threads(40)
-        torch.set_num_interop_threads(40)
+                # Configure CUDA device
+                if self.device.type == 'cuda':
+                    torch.cuda.set_device(self.device)
+                    torch.cuda.empty_cache()
+                    
+                    # Enable optimizations
+                    torch.backends.cuda.matmul.allow_tf32 = True
+                    torch.backends.cudnn.allow_tf32 = True
+                    torch.backends.cudnn.benchmark = True
+                    torch.backends.cudnn.enabled = True
 
-        # Configure CUDA settings
-        torch.cuda.set_device(self.device)
-        torch.cuda.empty_cache()
-        torch.set_float32_matmul_precision("high")
+                # Set thread settings at the process level
+                torch.set_num_threads(40)
 
-        # Optimize backends
-        torch.backends.cuda.matmul.allow_tf32 = True
-        torch.backends.cuda.enable_flash_sdp(True)
-        torch.backends.cuda.enable_mem_efficient_sdp(True)
-        torch.backends.cuda.enable_math_sdp(True)
-        torch.backends.cudnn.allow_tf32 = True
-        torch.backends.cudnn.benchmark = True
-        torch.backends.cudnn.enabled = True
+            except Exception as e:
+                logger.warning(f"Error configuring torch settings: {e}")
+                # Continue even if some settings fail
 
     def _setup_checkpoint_dir(self):
         """Setup checkpoint directory with cleanup"""
@@ -190,7 +189,7 @@ class EnhancedModelLoader:
         """Compute hash of model configuration and weights"""
         try:
             config_path = self.model_path / "config.json"
-            weights_path = self.model_path / "model.safetensors"
+            weights_path = self.model_path / "Deepseek-R1-Distill-Qwen-32B-Merged.safetensors"
 
             hasher = hashlib.sha256()
 

@@ -1,0 +1,483 @@
+2025-02-02 19:33:24,803 - src.api.middleware - INFO - Middleware configured - Rate limit: 100 rpm, Memory threshold: 75GB
+2025-02-02 19:33:24,804 - src.api.routes - INFO - Routes configured - Endpoints: ['/v1/chat/completions', '/v1/completions', '/v1/models', '/health'], Rate Limit: 100 rpm
+2025-02-02 19:33:24,805 - src.api.main - INFO - Starting resource initialization...
+2025-02-02 19:33:25,059 - src.api.main - INFO - Using GPU: NVIDIA H100 NVL with 93.02GB total memory
+2025-02-02 19:33:25,059 - src.utils.memory_manager - INFO - Enhanced memory pools configured - CPU pool size: 200GB
+2025-02-02 19:33:25,324 - src.utils.memory_manager - INFO - Enhanced CUDA environment configured successfully
+2025-02-02 19:33:25,324 - src.utils.memory_manager - INFO - Enhanced memory manager initialized successfully
+2025-02-02 19:33:25,326 - src.api.main - ERROR - Failed to initialize resources: Environment validation failed: Missing required files: model.safetensors
+2025-02-02 19:33:25,389 - src.utils.memory_manager - ERROR - Error during aggressive cleanup: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-02 19:33:25,390 - src.api.main - INFO - Starting resource cleanup...
+2025-02-02 19:33:25,390 - src.api.main - INFO - Running memory cleanup...
+2025-02-02 19:33:25,441 - src.utils.memory_manager - ERROR - Error during aggressive cleanup: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-02 19:33:25,441 - src.api.main - ERROR - Error during cleanup: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-02 19:33:28,785 - src.api.middleware - INFO - Middleware configured - Rate limit: 100 rpm, Memory threshold: 75GB
+2025-02-02 19:33:28,787 - src.api.routes - INFO - Routes configured - Endpoints: ['/v1/chat/completions', '/v1/completions', '/v1/models', '/health'], Rate Limit: 100 rpm
+2025-02-02 19:33:28,788 - src.api.main - INFO - Starting resource initialization...
+2025-02-02 19:33:28,952 - src.api.main - INFO - Using GPU: NVIDIA H100 NVL with 93.02GB total memory
+2025-02-02 19:33:28,953 - src.utils.memory_manager - INFO - Enhanced memory pools configured - CPU pool size: 200GB
+2025-02-02 19:33:29,097 - src.utils.memory_manager - INFO - Enhanced CUDA environment configured successfully
+2025-02-02 19:33:29,097 - src.utils.memory_manager - INFO - Enhanced memory manager initialized successfully
+2025-02-02 19:33:29,099 - src.api.main - ERROR - Failed to initialize resources: Environment validation failed: Missing required files: model.safetensors
+2025-02-02 19:33:29,162 - src.utils.memory_manager - ERROR - Error during aggressive cleanup: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-02 19:33:29,162 - src.api.main - INFO - Starting resource cleanup...
+2025-02-02 19:33:29,162 - src.api.main - INFO - Running memory cleanup...
+2025-02-02 19:33:29,213 - src.utils.memory_manager - ERROR - Error during aggressive cleanup: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-02 19:33:29,213 - src.api.main - ERROR - Error during cleanup: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-02 19:35:13,984 - src.api.middleware - INFO - Middleware configured - Rate limit: 100 rpm, Memory threshold: 75GB
+2025-02-02 19:35:13,985 - src.api.routes - INFO - Routes configured - Endpoints: ['/v1/chat/completions', '/v1/completions', '/v1/models', '/health'], Rate Limit: 100 rpm
+2025-02-02 19:35:13,986 - src.api.main - INFO - Starting resource initialization...
+2025-02-02 19:35:14,142 - src.api.main - INFO - Using GPU: NVIDIA H100 NVL with 93.02GB total memory
+2025-02-02 19:35:14,142 - src.utils.memory_manager - INFO - Enhanced memory pools configured - CPU pool size: 200GB
+2025-02-02 19:35:14,294 - src.utils.memory_manager - INFO - Enhanced CUDA environment configured successfully
+2025-02-02 19:35:14,294 - src.utils.memory_manager - INFO - Enhanced memory manager initialized successfully
+2025-02-02 19:35:14,296 - src.api.main - ERROR - Failed to initialize resources: Environment validation failed: Missing required files: model.safetensors
+2025-02-02 19:35:14,358 - src.utils.memory_manager - ERROR - Error during aggressive cleanup: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-02 19:35:14,359 - src.api.main - INFO - Starting resource cleanup...
+2025-02-02 19:35:14,359 - src.api.main - INFO - Running memory cleanup...
+2025-02-02 19:35:14,409 - src.utils.memory_manager - ERROR - Error during aggressive cleanup: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-02 19:35:14,410 - src.api.main - ERROR - Error during cleanup: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-02 19:35:17,278 - src.api.middleware - INFO - Middleware configured - Rate limit: 100 rpm, Memory threshold: 75GB
+2025-02-02 19:35:17,279 - src.api.routes - INFO - Routes configured - Endpoints: ['/v1/chat/completions', '/v1/completions', '/v1/models', '/health'], Rate Limit: 100 rpm
+2025-02-02 19:35:17,280 - src.api.main - INFO - Starting resource initialization...
+2025-02-02 19:35:17,441 - src.api.main - INFO - Using GPU: NVIDIA H100 NVL with 93.02GB total memory
+2025-02-02 19:35:17,442 - src.utils.memory_manager - INFO - Enhanced memory pools configured - CPU pool size: 200GB
+2025-02-02 19:35:17,593 - src.utils.memory_manager - INFO - Enhanced CUDA environment configured successfully
+2025-02-02 19:35:17,594 - src.utils.memory_manager - INFO - Enhanced memory manager initialized successfully
+2025-02-02 19:35:17,595 - src.api.main - ERROR - Failed to initialize resources: Environment validation failed: Missing required files: model.safetensors
+2025-02-02 19:35:17,655 - src.utils.memory_manager - ERROR - Error during aggressive cleanup: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-02 19:35:17,655 - src.api.main - INFO - Starting resource cleanup...
+2025-02-02 19:35:17,655 - src.api.main - INFO - Running memory cleanup...
+2025-02-02 19:35:17,705 - src.utils.memory_manager - ERROR - Error during aggressive cleanup: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-02 19:35:17,705 - src.api.main - ERROR - Error during cleanup: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-02 19:36:32,231 - src.api.middleware - INFO - Middleware configured - Rate limit: 100 rpm, Memory threshold: 75GB
+2025-02-02 19:36:32,233 - src.api.routes - INFO - Routes configured - Endpoints: ['/v1/chat/completions', '/v1/completions', '/v1/models', '/health'], Rate Limit: 100 rpm
+2025-02-02 19:36:32,233 - src.api.main - INFO - Starting resource initialization...
+2025-02-02 19:36:32,394 - src.api.main - INFO - Using GPU: NVIDIA H100 NVL with 93.02GB total memory
+2025-02-02 19:36:32,395 - src.utils.memory_manager - INFO - Enhanced memory pools configured - CPU pool size: 200GB
+2025-02-02 19:36:32,543 - src.utils.memory_manager - INFO - Enhanced CUDA environment configured successfully
+2025-02-02 19:36:32,543 - src.utils.memory_manager - INFO - Enhanced memory manager initialized successfully
+2025-02-02 19:36:32,546 - src.api.main - ERROR - Failed to initialize resources: Error: cannot set number of interop threads after parallel work has started or set_num_interop_threads called
+2025-02-02 19:36:32,607 - src.utils.memory_manager - ERROR - Error during aggressive cleanup: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-02 19:36:32,608 - src.api.main - INFO - Starting resource cleanup...
+2025-02-02 19:36:32,608 - src.api.main - INFO - Running memory cleanup...
+2025-02-02 19:36:32,658 - src.utils.memory_manager - ERROR - Error during aggressive cleanup: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-02 19:36:32,659 - src.api.main - ERROR - Error during cleanup: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-02 19:36:35,535 - src.api.middleware - INFO - Middleware configured - Rate limit: 100 rpm, Memory threshold: 75GB
+2025-02-02 19:36:35,537 - src.api.routes - INFO - Routes configured - Endpoints: ['/v1/chat/completions', '/v1/completions', '/v1/models', '/health'], Rate Limit: 100 rpm
+2025-02-02 19:36:35,537 - src.api.main - INFO - Starting resource initialization...
+2025-02-02 19:36:35,697 - src.api.main - INFO - Using GPU: NVIDIA H100 NVL with 93.02GB total memory
+2025-02-02 19:36:35,698 - src.utils.memory_manager - INFO - Enhanced memory pools configured - CPU pool size: 200GB
+2025-02-02 19:36:35,846 - src.utils.memory_manager - INFO - Enhanced CUDA environment configured successfully
+2025-02-02 19:36:35,846 - src.utils.memory_manager - INFO - Enhanced memory manager initialized successfully
+2025-02-02 19:36:35,849 - src.api.main - ERROR - Failed to initialize resources: Error: cannot set number of interop threads after parallel work has started or set_num_interop_threads called
+2025-02-02 19:36:35,911 - src.utils.memory_manager - ERROR - Error during aggressive cleanup: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-02 19:36:35,911 - src.api.main - INFO - Starting resource cleanup...
+2025-02-02 19:36:35,911 - src.api.main - INFO - Running memory cleanup...
+2025-02-02 19:36:35,964 - src.utils.memory_manager - ERROR - Error during aggressive cleanup: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-02 19:36:35,964 - src.api.main - ERROR - Error during cleanup: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-02 19:46:18,364 - src.api.middleware - INFO - Middleware configured - Rate limit: 100 rpm, Memory threshold: 75GB
+2025-02-02 19:46:18,366 - src.api.routes - INFO - Routes configured - Endpoints: ['/v1/chat/completions', '/v1/completions', '/v1/models', '/health'], Rate Limit: 100 rpm
+2025-02-02 19:46:18,367 - src.api.main - INFO - Starting resource initialization...
+2025-02-02 19:46:18,523 - src.api.main - INFO - Using GPU: NVIDIA H100 NVL with 93.02GB total memory
+2025-02-02 19:46:18,524 - src.utils.memory_manager - INFO - Enhanced memory pools configured - CPU pool size: 200GB
+2025-02-02 19:46:18,679 - src.utils.memory_manager - INFO - Enhanced CUDA environment configured successfully
+2025-02-02 19:46:18,680 - src.utils.memory_manager - INFO - Enhanced memory manager initialized successfully
+2025-02-02 19:46:18,682 - src.model.model_loader - INFO - Model loader initialized in 0.00s
+2025-02-02 19:46:18,749 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-02 19:46:18,903 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-02 19:46:18,903 - src.model.model_loader - ERROR - Model loading failed with context: {'load_time': 0.22125744819641113, 'memory_allocated': 0.0, 'memory_reserved': 0.0}
+2025-02-02 19:46:18,904 - src.api.main - ERROR - Failed to initialize resources: Model loading failed: Failed to load model configuration: 'qwen2'
+2025-02-02 19:46:19,109 - src.utils.memory_manager - INFO - Aggressive cleanup completed - Free memory: 92.50GB
+2025-02-02 19:46:19,109 - src.api.main - INFO - Starting resource cleanup...
+2025-02-02 19:46:19,110 - src.api.main - INFO - Running memory cleanup...
+2025-02-02 19:46:19,309 - src.utils.memory_manager - INFO - Aggressive cleanup completed - Free memory: 92.50GB
+2025-02-02 19:46:19,362 - src.api.main - INFO - Resource cleanup completed
+2025-02-02 19:46:22,245 - src.api.middleware - INFO - Middleware configured - Rate limit: 100 rpm, Memory threshold: 75GB
+2025-02-02 19:46:22,246 - src.api.routes - INFO - Routes configured - Endpoints: ['/v1/chat/completions', '/v1/completions', '/v1/models', '/health'], Rate Limit: 100 rpm
+2025-02-02 19:46:22,247 - src.api.main - INFO - Starting resource initialization...
+2025-02-02 19:46:22,407 - src.api.main - INFO - Using GPU: NVIDIA H100 NVL with 93.02GB total memory
+2025-02-02 19:46:22,408 - src.utils.memory_manager - INFO - Enhanced memory pools configured - CPU pool size: 200GB
+2025-02-02 19:46:22,573 - src.utils.memory_manager - INFO - Enhanced CUDA environment configured successfully
+2025-02-02 19:46:22,573 - src.utils.memory_manager - INFO - Enhanced memory manager initialized successfully
+2025-02-02 19:46:22,575 - src.model.model_loader - INFO - Model loader initialized in 0.00s
+2025-02-02 19:46:22,638 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-02 19:46:22,789 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-02 19:46:22,790 - src.model.model_loader - ERROR - Model loading failed with context: {'load_time': 0.21453642845153809, 'memory_allocated': 0.0, 'memory_reserved': 0.0}
+2025-02-02 19:46:22,790 - src.api.main - ERROR - Failed to initialize resources: Model loading failed: Failed to load model configuration: 'qwen2'
+2025-02-02 19:46:22,994 - src.utils.memory_manager - INFO - Aggressive cleanup completed - Free memory: 92.50GB
+2025-02-02 19:46:22,995 - src.api.main - INFO - Starting resource cleanup...
+2025-02-02 19:46:22,995 - src.api.main - INFO - Running memory cleanup...
+2025-02-02 19:46:23,198 - src.utils.memory_manager - INFO - Aggressive cleanup completed - Free memory: 92.50GB
+2025-02-02 19:46:23,251 - src.api.main - INFO - Resource cleanup completed
+2025-02-02 19:46:23,307 - src.api.main - INFO - Received shutdown signal. Initiating graceful shutdown...
+2025-02-02 19:46:23,307 - src.api.main - INFO - Starting resource cleanup...
+2025-02-02 19:46:23,307 - src.api.main - INFO - Running memory cleanup...
+2025-02-02 19:46:23,518 - src.utils.memory_manager - INFO - Aggressive cleanup completed - Free memory: 92.50GB
+2025-02-02 19:46:23,569 - src.api.main - INFO - Resource cleanup completed
+2025-02-02 20:59:34,499 - src.api.middleware - INFO - Middleware configured - Rate limit: 100 rpm, Memory threshold: 75GB
+2025-02-02 20:59:34,504 - src.api.routes - INFO - Routes configured - Endpoints: ['/v1/chat/completions', '/v1/completions', '/v1/models', '/health'], Rate Limit: 100 rpm
+2025-02-02 20:59:34,505 - src.api.main - INFO - Starting resource initialization...
+2025-02-02 20:59:34,768 - src.api.main - INFO - Using GPU: NVIDIA H100 NVL with 93.02GB total memory
+2025-02-02 20:59:34,769 - src.utils.memory_manager - INFO - Enhanced memory pools configured - CPU pool size: 200GB
+2025-02-02 20:59:35,027 - src.utils.memory_manager - INFO - Enhanced CUDA environment configured successfully
+2025-02-02 20:59:35,027 - src.utils.memory_manager - INFO - Enhanced memory manager initialized successfully
+2025-02-02 20:59:35,030 - src.model.model_loader - INFO - Model loader initialized in 0.00s
+2025-02-02 20:59:35,031 - src.model.model_loader - INFO - Model configuration optimized successfully
+2025-02-02 20:59:35,031 - src.model.model_loader - INFO - Preparing for model loading...
+2025-02-02 20:59:35,255 - src.utils.memory_manager - INFO - Aggressive cleanup completed - Free memory: 92.50GB
+2025-02-02 20:59:35,255 - src.utils.memory_manager - INFO - Preparing memory for model load...
+2025-02-02 20:59:35,256 - src.utils.memory_manager - INFO - Memory prepared - Available: 92.50GB, Reserved: 0.00GB
+2025-02-02 20:59:35,358 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-02 20:59:35,505 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-02 20:59:35,505 - src.model.model_loader - ERROR - Model loading failed with context: {'load_time': 0.474945068359375, 'memory_allocated': 0.0, 'memory_reserved': 0.0}
+2025-02-02 20:59:35,505 - src.api.main - ERROR - Failed to initialize resources: Model loading failed: Failed to prepare for model loading: 'enabled'
+2025-02-02 20:59:35,703 - src.utils.memory_manager - INFO - Aggressive cleanup completed - Free memory: 92.50GB
+2025-02-02 20:59:35,703 - src.api.main - INFO - Starting resource cleanup...
+2025-02-02 20:59:35,703 - src.api.main - INFO - Running memory cleanup...
+2025-02-02 20:59:35,898 - src.utils.memory_manager - INFO - Aggressive cleanup completed - Free memory: 92.50GB
+2025-02-02 20:59:35,949 - src.api.main - INFO - Resource cleanup completed
+2025-02-02 20:59:39,270 - src.api.middleware - INFO - Middleware configured - Rate limit: 100 rpm, Memory threshold: 75GB
+2025-02-02 20:59:39,271 - src.api.routes - INFO - Routes configured - Endpoints: ['/v1/chat/completions', '/v1/completions', '/v1/models', '/health'], Rate Limit: 100 rpm
+2025-02-02 20:59:39,272 - src.api.main - INFO - Starting resource initialization...
+2025-02-02 20:59:39,427 - src.api.main - INFO - Using GPU: NVIDIA H100 NVL with 93.02GB total memory
+2025-02-02 20:59:39,428 - src.utils.memory_manager - INFO - Enhanced memory pools configured - CPU pool size: 200GB
+2025-02-02 20:59:39,575 - src.utils.memory_manager - INFO - Enhanced CUDA environment configured successfully
+2025-02-02 20:59:39,575 - src.utils.memory_manager - INFO - Enhanced memory manager initialized successfully
+2025-02-02 20:59:39,577 - src.model.model_loader - INFO - Model loader initialized in 0.00s
+2025-02-02 20:59:39,579 - src.model.model_loader - INFO - Model configuration optimized successfully
+2025-02-02 20:59:39,579 - src.model.model_loader - INFO - Preparing for model loading...
+2025-02-02 20:59:39,794 - src.utils.memory_manager - INFO - Aggressive cleanup completed - Free memory: 92.50GB
+2025-02-02 20:59:39,794 - src.utils.memory_manager - INFO - Preparing memory for model load...
+2025-02-02 20:59:39,795 - src.utils.memory_manager - INFO - Memory prepared - Available: 92.50GB, Reserved: 0.00GB
+2025-02-02 20:59:39,898 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-02 20:59:40,048 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-02 20:59:40,049 - src.model.model_loader - ERROR - Model loading failed with context: {'load_time': 0.47061753273010254, 'memory_allocated': 0.0, 'memory_reserved': 0.0}
+2025-02-02 20:59:40,049 - src.api.main - ERROR - Failed to initialize resources: Model loading failed: Failed to prepare for model loading: 'enabled'
+2025-02-02 20:59:40,247 - src.utils.memory_manager - INFO - Aggressive cleanup completed - Free memory: 92.50GB
+2025-02-02 20:59:40,247 - src.api.main - INFO - Starting resource cleanup...
+2025-02-02 20:59:40,247 - src.api.main - INFO - Running memory cleanup...
+2025-02-02 20:59:40,446 - src.utils.memory_manager - INFO - Aggressive cleanup completed - Free memory: 92.50GB
+2025-02-02 20:59:40,498 - src.api.main - INFO - Resource cleanup completed
+2025-02-03 20:01:07,315 - src.api.middleware - INFO - Middleware configured - Rate limit: 100 rpm, Memory threshold: 75GB
+2025-02-03 20:01:07,327 - src.api.routes - INFO - Routes configured - Endpoints: ['/v1/chat/completions', '/v1/completions', '/v1/models', '/health'], Rate Limit: 100 rpm
+2025-02-03 20:01:07,328 - src.api.main - INFO - Starting resource initialization...
+2025-02-03 20:01:07,586 - src.api.main - INFO - Using GPU: NVIDIA H100 NVL with 93.02GB total memory
+2025-02-03 20:01:07,587 - src.utils.memory_manager - INFO - Enhanced memory pools configured - CPU pool size: 200GB
+2025-02-03 20:01:07,854 - src.utils.memory_manager - INFO - Enhanced CUDA environment configured successfully
+2025-02-03 20:01:07,854 - src.utils.memory_manager - INFO - Enhanced memory manager initialized successfully
+2025-02-03 20:01:07,856 - src.model.model_loader - INFO - Model loader initialized in 0.00s
+2025-02-03 20:01:07,860 - src.model.model_loader - INFO - Model configuration optimized successfully
+2025-02-03 20:01:07,860 - src.model.model_loader - INFO - Preparing for model loading...
+2025-02-03 20:01:08,096 - src.utils.memory_manager - INFO - Aggressive cleanup completed - Free memory: 92.50GB
+2025-02-03 20:01:08,096 - src.utils.memory_manager - INFO - Preparing memory for model load...
+2025-02-03 20:01:08,097 - src.utils.memory_manager - INFO - Memory prepared - Available: 92.50GB, Reserved: 0.00GB
+2025-02-03 20:01:08,151 - src.model.model_loader - INFO - Configured offload directory: /tmp/offload
+2025-02-03 20:01:08,151 - src.model.model_loader - INFO - Loading model from /data/models/merged...
+2025-02-03 20:06:56,844 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:06:57,031 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:06:58,033 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:06:58,222 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:06:59,223 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:06:59,417 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:07:00,419 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:07:00,600 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:07:01,602 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:07:01,784 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:07:02,786 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:07:02,969 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:07:03,971 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:07:04,153 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:07:05,154 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:07:05,337 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:07:06,339 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:07:06,537 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:07:07,539 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:07:07,721 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:07:08,723 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:07:08,905 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:07:09,907 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:07:10,090 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:07:11,091 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:07:11,275 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:07:12,277 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:07:12,459 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:07:13,459 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:07:13,641 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:07:14,643 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:07:14,825 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:07:15,827 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:07:16,009 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:07:17,011 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:07:17,192 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:07:18,194 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:07:18,376 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:07:19,378 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:07:19,568 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:07:20,570 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:07:20,754 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:07:20,754 - src.api.main - INFO - Received shutdown signal. Initiating graceful shutdown...
+2025-02-03 20:07:20,754 - src.api.main - INFO - Starting resource cleanup...
+2025-02-03 20:07:20,754 - src.api.main - INFO - Running memory cleanup...
+2025-02-03 20:07:20,982 - src.utils.memory_manager - INFO - Aggressive cleanup completed - Free memory: 68.18GB
+2025-02-03 20:07:21,040 - src.api.main - INFO - Resource cleanup completed
+2025-02-03 20:07:21,040 - src.api.main - INFO - Starting resource cleanup...
+2025-02-03 20:07:21,040 - src.api.main - INFO - Running memory cleanup...
+2025-02-03 20:07:21,268 - src.utils.memory_manager - INFO - Aggressive cleanup completed - Free memory: 68.18GB
+2025-02-03 20:07:21,326 - src.api.main - INFO - Resource cleanup completed
+2025-02-03 20:34:08,017 - src.api.middleware - INFO - Middleware configured - Rate limit: 100 rpm, Memory threshold: 75GB
+2025-02-03 20:34:08,029 - src.api.routes - INFO - Routes configured - Endpoints: ['/v1/chat/completions', '/v1/completions', '/v1/models', '/health'], Rate Limit: 100 rpm
+2025-02-03 20:34:08,029 - src.api.main - INFO - Starting resource initialization...
+2025-02-03 20:34:08,293 - src.api.main - INFO - Using GPU: NVIDIA H100 NVL with 93.02GB total memory
+2025-02-03 20:34:08,293 - src.api.main - INFO - Initializing memory manager...
+2025-02-03 20:34:08,294 - src.utils.memory_manager - INFO - Enhanced memory pools configured - CPU pool size: 200GB
+2025-02-03 20:34:08,568 - src.utils.memory_manager - INFO - Enhanced CUDA environment configured successfully
+2025-02-03 20:34:08,568 - src.utils.memory_manager - INFO - Enhanced memory manager initialized successfully
+2025-02-03 20:34:08,568 - src.api.main - INFO - Initial GPU memory - Free: 92.50GB, Total: 93.02GB
+2025-02-03 20:34:08,568 - src.api.main - INFO - Initializing model loader...
+2025-02-03 20:34:08,570 - src.model.model_loader - INFO - Model loader initialized in 0.00s
+2025-02-03 20:34:08,570 - src.api.main - ERROR - Failed to initialize resources: module 'asyncio' has no attribute 'timeout'
+2025-02-03 20:34:08,792 - src.utils.memory_manager - INFO - Memory cleanup completed:
+- Free: 92.50GB
+- Total: 93.02GB
+- Allocated: 0.00GB
+- Reserved: 0.00GB
+2025-02-03 20:34:08,792 - src.api.main - INFO - Starting resource cleanup...
+2025-02-03 20:34:08,792 - src.api.main - INFO - Running memory cleanup...
+2025-02-03 20:34:09,004 - src.utils.memory_manager - INFO - Memory cleanup completed:
+- Free: 92.50GB
+- Total: 93.02GB
+- Allocated: 0.00GB
+- Reserved: 0.00GB
+2025-02-03 20:34:09,058 - src.api.main - INFO - Resource cleanup completed
+2025-02-03 20:34:12,409 - src.api.middleware - INFO - Middleware configured - Rate limit: 100 rpm, Memory threshold: 75GB
+2025-02-03 20:34:12,410 - src.api.routes - INFO - Routes configured - Endpoints: ['/v1/chat/completions', '/v1/completions', '/v1/models', '/health'], Rate Limit: 100 rpm
+2025-02-03 20:34:12,411 - src.api.main - INFO - Starting resource initialization...
+2025-02-03 20:34:12,572 - src.api.main - INFO - Using GPU: NVIDIA H100 NVL with 93.02GB total memory
+2025-02-03 20:34:12,572 - src.api.main - INFO - Initializing memory manager...
+2025-02-03 20:34:12,572 - src.utils.memory_manager - INFO - Enhanced memory pools configured - CPU pool size: 200GB
+2025-02-03 20:34:12,718 - src.utils.memory_manager - INFO - Enhanced CUDA environment configured successfully
+2025-02-03 20:34:12,718 - src.utils.memory_manager - INFO - Enhanced memory manager initialized successfully
+2025-02-03 20:34:12,718 - src.api.main - INFO - Initial GPU memory - Free: 92.50GB, Total: 93.02GB
+2025-02-03 20:34:12,718 - src.api.main - INFO - Initializing model loader...
+2025-02-03 20:34:12,720 - src.model.model_loader - INFO - Model loader initialized in 0.00s
+2025-02-03 20:34:12,720 - src.api.main - ERROR - Failed to initialize resources: module 'asyncio' has no attribute 'timeout'
+2025-02-03 20:34:12,937 - src.utils.memory_manager - INFO - Memory cleanup completed:
+- Free: 92.50GB
+- Total: 93.02GB
+- Allocated: 0.00GB
+- Reserved: 0.00GB
+2025-02-03 20:34:12,938 - src.api.main - INFO - Starting resource cleanup...
+2025-02-03 20:34:12,938 - src.api.main - INFO - Running memory cleanup...
+2025-02-03 20:34:13,144 - src.utils.memory_manager - INFO - Memory cleanup completed:
+- Free: 92.50GB
+- Total: 93.02GB
+- Allocated: 0.00GB
+- Reserved: 0.00GB
+2025-02-03 20:34:13,197 - src.api.main - INFO - Resource cleanup completed
+2025-02-03 20:34:16,112 - src.api.middleware - INFO - Middleware configured - Rate limit: 100 rpm, Memory threshold: 75GB
+2025-02-03 20:34:16,114 - src.api.routes - INFO - Routes configured - Endpoints: ['/v1/chat/completions', '/v1/completions', '/v1/models', '/health'], Rate Limit: 100 rpm
+2025-02-03 20:34:16,115 - src.api.main - INFO - Starting resource initialization...
+2025-02-03 20:34:16,275 - src.api.main - INFO - Using GPU: NVIDIA H100 NVL with 93.02GB total memory
+2025-02-03 20:34:16,275 - src.api.main - INFO - Initializing memory manager...
+2025-02-03 20:34:16,275 - src.utils.memory_manager - INFO - Enhanced memory pools configured - CPU pool size: 200GB
+2025-02-03 20:34:16,421 - src.utils.memory_manager - INFO - Enhanced CUDA environment configured successfully
+2025-02-03 20:34:16,421 - src.utils.memory_manager - INFO - Enhanced memory manager initialized successfully
+2025-02-03 20:34:16,421 - src.api.main - INFO - Initial GPU memory - Free: 92.50GB, Total: 93.02GB
+2025-02-03 20:34:16,421 - src.api.main - INFO - Initializing model loader...
+2025-02-03 20:34:16,423 - src.model.model_loader - INFO - Model loader initialized in 0.00s
+2025-02-03 20:34:16,423 - src.api.main - ERROR - Failed to initialize resources: module 'asyncio' has no attribute 'timeout'
+2025-02-03 20:34:16,649 - src.utils.memory_manager - INFO - Memory cleanup completed:
+- Free: 92.50GB
+- Total: 93.02GB
+- Allocated: 0.00GB
+- Reserved: 0.00GB
+2025-02-03 20:34:16,649 - src.api.main - INFO - Starting resource cleanup...
+2025-02-03 20:34:16,649 - src.api.main - INFO - Running memory cleanup...
+2025-02-03 20:34:16,862 - src.utils.memory_manager - INFO - Memory cleanup completed:
+- Free: 92.50GB
+- Total: 93.02GB
+- Allocated: 0.00GB
+- Reserved: 0.00GB
+2025-02-03 20:34:16,915 - src.api.main - INFO - Resource cleanup completed
+2025-02-03 20:40:22,482 - src.api.middleware - INFO - Middleware configured - Rate limit: 100 rpm, Memory threshold: 75GB
+2025-02-03 20:40:22,483 - src.api.routes - INFO - Routes configured - Endpoints: ['/v1/chat/completions', '/v1/completions', '/v1/models', '/health'], Rate Limit: 100 rpm
+2025-02-03 20:40:22,484 - src.api.main - INFO - Starting resource initialization...
+2025-02-03 20:40:22,641 - src.api.main - INFO - Using GPU: NVIDIA H100 NVL with 93.02GB total memory
+2025-02-03 20:40:22,641 - src.api.main - INFO - Initializing memory manager...
+2025-02-03 20:40:22,642 - src.utils.memory_manager - INFO - Enhanced memory pools configured - CPU pool size: 200GB
+2025-02-03 20:40:22,792 - src.utils.memory_manager - INFO - Enhanced CUDA environment configured successfully
+2025-02-03 20:40:22,792 - src.utils.memory_manager - INFO - Enhanced memory manager initialized successfully
+2025-02-03 20:40:22,792 - src.api.main - INFO - Initial GPU memory - Free: 92.50GB, Total: 93.02GB
+2025-02-03 20:40:22,792 - src.api.main - INFO - Initializing model loader...
+2025-02-03 20:40:22,794 - src.model.model_loader - INFO - Model loader initialized in 0.00s
+2025-02-03 20:40:22,800 - src.model.model_loader - INFO - Model configuration optimized successfully
+2025-02-03 20:40:22,800 - src.model.model_loader - INFO - Preparing for model loading...
+2025-02-03 20:40:23,030 - src.utils.memory_manager - INFO - Memory cleanup completed:
+- Free: 92.50GB
+- Total: 93.02GB
+- Allocated: 0.00GB
+- Reserved: 0.00GB
+2025-02-03 20:40:23,030 - src.utils.memory_manager - INFO - Preparing memory for model load...
+2025-02-03 20:40:23,031 - src.utils.memory_manager - INFO - Memory prepared - Available: 92.50GB, Reserved: 0.00GB
+2025-02-03 20:40:23,085 - src.model.model_loader - INFO - Configured offload directory: /tmp/offload
+2025-02-03 20:40:23,085 - src.model.model_loader - INFO - Loading model from /data/models/merged...
+2025-02-03 20:45:40,462 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:45:40,647 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:45:41,649 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:45:41,831 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:45:42,833 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:45:43,017 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:45:44,019 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:45:44,201 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:45:45,203 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:45:45,382 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:45:46,384 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:45:46,568 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:45:47,570 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:45:47,752 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:45:48,754 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:45:48,936 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:45:49,938 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:45:50,120 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:45:51,122 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:45:51,305 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:45:52,307 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:45:52,488 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:45:53,490 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:45:53,671 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:45:54,673 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:45:54,855 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:45:55,857 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:45:56,040 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:45:57,042 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:45:57,225 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:45:58,227 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:45:58,411 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:45:59,413 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:45:59,595 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:00,597 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:00,781 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:01,783 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:01,965 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:02,968 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:03,149 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:04,151 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:04,333 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:05,335 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:05,519 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:06,521 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:06,701 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:07,703 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:07,883 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:08,884 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:09,064 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:10,066 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:10,249 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:11,251 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:11,434 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:12,436 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:12,621 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:13,623 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:13,804 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:14,806 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:14,988 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:15,990 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:16,172 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:17,174 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:17,358 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:18,360 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:18,541 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:19,543 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:19,726 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:20,728 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:20,911 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:21,913 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:22,095 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:23,097 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:23,279 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:24,281 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:24,463 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:25,465 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:25,647 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:26,649 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:26,830 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:27,832 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:28,013 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:29,015 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:29,197 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:30,199 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:30,383 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:31,385 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:31,568 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:32,570 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:32,752 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:33,754 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:33,936 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:34,938 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:35,121 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:36,123 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:36,307 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:37,309 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:37,489 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:38,491 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:38,672 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:39,674 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:39,857 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:40,859 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:41,041 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:42,043 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:42,223 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:43,225 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:43,408 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:44,410 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:44,594 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:45,596 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:45,775 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:46,777 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:46,960 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:47,962 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:48,142 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:49,144 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:49,325 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:50,327 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:50,511 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:51,513 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:51,695 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:52,697 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:52,878 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:53,880 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:54,063 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:55,065 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:55,246 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:56,248 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:56,428 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:57,430 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:57,610 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:58,613 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:58,795 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:46:59,797 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:46:59,979 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:47:00,981 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:47:01,164 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:47:02,166 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:47:02,346 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:47:03,348 - src.utils.memory_manager - WARNING - Initiating emergency cleanup
+2025-02-03 20:47:03,531 - src.utils.memory_manager - ERROR - Emergency cleanup failed: module 'torch.autograd' has no attribute '_force_clear_context'
+2025-02-03 20:47:03,531 - src.api.main - INFO - Received shutdown signal. Initiating graceful shutdown...
+2025-02-03 20:47:03,531 - src.api.main - INFO - Starting resource cleanup...
+2025-02-03 20:47:03,531 - src.api.main - INFO - Running memory cleanup...
+2025-02-03 20:47:03,761 - src.utils.memory_manager - INFO - Memory cleanup completed:
+- Free: 63.91GB
+- Total: 93.02GB
+- Allocated: 28.60GB
+- Reserved: 28.60GB
+2025-02-03 20:47:03,818 - src.api.main - INFO - Resource cleanup completed
+2025-02-03 20:47:03,818 - src.api.main - INFO - Starting resource cleanup...
+2025-02-03 20:47:03,818 - src.api.main - INFO - Running memory cleanup...
+2025-02-03 20:47:04,046 - src.utils.memory_manager - INFO - Memory cleanup completed:
+- Free: 63.91GB
+- Total: 93.02GB
+- Allocated: 28.60GB
+- Reserved: 28.60GB
+2025-02-03 20:47:04,104 - src.api.main - INFO - Resource cleanup completed

@@ -12,7 +12,7 @@ services:
       - MKL_NUM_THREADS=40
       - CUDA_VISIBLE_DEVICES=0
     volumes:
-      - ./data/models:/data/models
+      - /data/models:/data/models
       - ./data/qwen/logs:/data/qwen/logs
       - ./config:/app/config
       - model_checkpoints:/tmp/model_checkpoints

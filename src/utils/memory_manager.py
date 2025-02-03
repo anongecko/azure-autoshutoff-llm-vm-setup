@@ -333,47 +333,49 @@ class OptimizedMemoryManager:
                 return False
 
     async def _aggressive_cleanup(self):
-        """Enhanced aggressive memory cleanup"""
-        try:
-            # Initial cleanup
-            gc.collect()
+            """Perform aggressive memory cleanup"""
+            try:
+                # Force garbage collection first
+                gc.collect()
 
-            with torch.cuda.device(self.device):
-                # Clear CUDA caches
-                torch.cuda.empty_cache()
-                torch.cuda.memory.empty_cache()
-
-                # Reset memory stats
-                torch.cuda.reset_peak_memory_stats()
-                torch.cuda.reset_accumulated_memory_stats()
-
-                # Synchronize CUDA
-                torch.cuda.synchronize()
-
-                # Clear PyTorch caches
-                if hasattr(torch.jit, "flush_memory_caches"):
-                    torch.jit.flush_memory_caches()
-
-                # Reset autograd
-                if hasattr(torch, "autograd"):
-                    torch.autograd._force_clear_context()
-
-                # Multiple GC passes with verification
-                for _ in range(3):
-                    gc.collect()
+                with torch.cuda.device(self.device):
+                    # Clear CUDA caches
                     torch.cuda.empty_cache()
+                    if hasattr(torch.cuda, "memory"):
+                        torch.cuda.memory.empty_cache()
 
-            # Verify cleanup effectiveness
-            memory_info = self.get_memory_info()
-            if memory_info["free_gb"] < self.memory_threshold:
-                logger.warning("Aggressive cleanup did not free sufficient memory")
-                await self.emergency_cleanup()
+                    # Reset memory stats
+                    torch.cuda.reset_peak_memory_stats()
+                    torch.cuda.reset_accumulated_memory_stats()
 
-            logger.info(f"Aggressive cleanup completed - Free memory: {memory_info['free_gb']:.2f}GB")
+                    # Synchronize CUDA
+                    torch.cuda.synchronize()
 
-        except Exception as e:
-            logger.error(f"Error during aggressive cleanup: {e}")
-            raise
+                    # Clear JIT cache if available
+                    if hasattr(torch.jit, "flush_memory_caches"):
+                        torch.jit.flush_memory_caches()
+
+                    # Multiple GC passes
+                    for _ in range(3):
+                        gc.collect()
+                        torch.cuda.empty_cache()
+
+                # Log cleanup results with detailed info
+                free, total = torch.cuda.mem_get_info()
+                allocated = torch.cuda.memory_allocated()
+                reserved = torch.cuda.memory_reserved()
+                
+                logger.info(
+                    f"Memory cleanup completed:\n"
+                    f"- Free: {free / (1024**3):.2f}GB\n"
+                    f"- Total: {total / (1024**3):.2f}GB\n"
+                    f"- Allocated: {allocated / (1024**3):.2f}GB\n"
+                    f"- Reserved: {reserved / (1024**3):.2f}GB"
+                )
+
+            except Exception as e:
+                logger.error(f"Error during memory cleanup: {e}")
+                # Don't raise the error, just log it
 
     async def _update_memory_thresholds(self):
         """Update memory thresholds based on usage patterns"""

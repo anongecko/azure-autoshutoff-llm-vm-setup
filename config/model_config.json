@@ -20,6 +20,7 @@
             "cpu": "256GB"
         },
         "offload_config": {
+            "enabled": true,
             "offload_folder": "/tmp/offload",
             "cpu_offload_threshold": 0.85,
             "gpu_memory_buffer": "2GB",
@@ -58,7 +59,7 @@
     "attention": {
         "use_flash_attention": true,
         "attention_implementation": "flash_attention_2",
-        "sliding_window": 8192,
+        "sliding_window": null,
         "kv_cache_strategy": "dynamic",
         "max_new_tokens": 16384,
         "attention_sink_size": 1024,

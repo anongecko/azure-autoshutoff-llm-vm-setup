@@ -5,7 +5,7 @@ import asyncio
 import json
 import time
 import logging
-from pydantic import BaseModel, Field, validator, root_validator
+from pydantic import BaseModel, Field, validator, model_validator
 import torch
 from pathlib import Path
 from ..model import ModelManager
@@ -53,7 +53,6 @@ class ChatMessage(BaseModel):
 
 class ChatRequest(BaseModel):
     """Enhanced chat completion request"""
-
     messages: List[ChatMessage]
     temperature: Optional[float] = Field(MODEL_CONFIG["generation"]["temperature"], ge=0.0, le=2.0)
     max_tokens: Optional[int] = Field(MODEL_CONFIG["attention"]["max_new_tokens"], ge=1)
@@ -64,26 +63,24 @@ class ChatRequest(BaseModel):
     stop: Optional[Union[str, List[str]]] = None
     language: Optional[str] = Field(None, description="Programming language for code-specific prompting")
 
-    @root_validator
-    def validate_request(cls, values):
+    @model_validator(mode='after')
+    def validate_request(self) -> 'ChatRequest':
         # Validate total message length
-        if "messages" in values:
-            total_chars = sum(len(msg.content) for msg in values["messages"])
+        if hasattr(self, "messages"):
+            total_chars = sum(len(msg.content) for msg in self.messages)
             approx_tokens = total_chars // 4  # Rough estimate
             if approx_tokens > MODEL_CONFIG["max_sequence_length"]:
                 raise ValueError(f"Total message length exceeds model's context window")
 
         # Adjust generation parameters for code
-        if values.get("language"):
-            values["temperature"] = min(values.get("temperature", 0.7), 0.8)
-            values["top_p"] = min(values.get("top_p", 0.95), 0.95)
+        if self.language:
+            self.temperature = min(self.temperature or 0.7, 0.8)
+            self.top_p = min(self.top_p or 0.95, 0.95)
 
-        return values
-
+        return self
 
 class CompletionRequest(BaseModel):
     """Enhanced text completion request"""
-
     prompt: Union[str, List[str]]
     temperature: Optional[float] = Field(MODEL_CONFIG["generation"]["temperature"], ge=0.0, le=2.0)
     max_tokens: Optional[int] = Field(MODEL_CONFIG["attention"]["max_new_tokens"], ge=1)
@@ -94,25 +91,23 @@ class CompletionRequest(BaseModel):
     stop: Optional[Union[str, List[str]]] = None
     language: Optional[str] = Field(None, description="Programming language for code-specific prompting")
 
-    @root_validator
-    def validate_request(cls, values):
+    @model_validator(mode='after')
+    def validate_request(self) -> 'CompletionRequest':
         # Validate prompt length
-        if "prompt" in values:
-            if isinstance(values["prompt"], list):
-                total_chars = sum(len(p) for p in values["prompt"])
-            else:
-                total_chars = len(values["prompt"])
-            approx_tokens = total_chars // 4
-            if approx_tokens > MODEL_CONFIG["max_sequence_length"]:
-                raise ValueError(f"Prompt length exceeds model's context window")
+        if isinstance(self.prompt, list):
+            total_chars = sum(len(p) for p in self.prompt)
+        else:
+            total_chars = len(self.prompt)
+        approx_tokens = total_chars // 4
+        if approx_tokens > MODEL_CONFIG["max_sequence_length"]:
+            raise ValueError(f"Prompt length exceeds model's context window")
 
         # Adjust for code completion
-        if values.get("language"):
-            values["temperature"] = min(values.get("temperature", 0.7), 0.8)
-            values["top_p"] = min(values.get("top_p", 0.95), 0.95)
+        if self.language:
+            self.temperature = min(self.temperature or 0.7, 0.8)
+            self.top_p = min(self.top_p or 0.95, 0.95)
 
-        return values
-
+        return self
 
 async def get_model_manager(request: Request) -> ModelManager:
     """Get and validate model manager"""
